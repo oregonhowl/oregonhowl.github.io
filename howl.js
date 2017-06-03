@@ -15897,22 +15897,25 @@ var config = exports.config = {
     wildfires: 'History of Wildfire Severity',
     ecopwilderness: 'Potential Wilderness Areas'
   },
-  ecoregionsImageryProvider: new Cesium.ArcGisMapServerImageryProvider({
-    url: 'https://nrimp.dfw.state.or.us/arcgis/rest/services/Compass/Ecoregions/MapServer',
-    layers: '0',
-    enablePickFeatures: true,
-    credit: 'Oregon Department of Fish and Wildlife'
-  }),
+  /*ecoregionsImageryProvider:
+    new Cesium.ArcGisMapServerImageryProvider(
+      {
+        url: 'https://nrimp.dfw.state.or.us/arcgis/rest/services/Compass/Ecoregions/MapServer',
+        layers: '0',
+        enablePickFeatures: true,
+        credit: 'Oregon Department of Fish and Wildlife'
+      }
+    ),*/
   ecoRegionColors: {
-    'Coast Range': { label: 'Coast Range', color: '#ABB9D1' },
-    'Columbia Plateau': { label: 'Columbia Plateau', color: '#FED55B' },
-    'Blue Mountains': { label: 'Blue Mountains', color: '#CDD4A7' },
-    'Snake River Plain': { label: 'Snake River Plain', color: '#E89B6F' },
-    'Willamette Valley': { label: 'Willamette Valley', color: '#B57F22' },
-    'Cascades': { label: 'Cascades', color: '#7CBA82' },
-    'Klamath Mountains/California High North Coast Range': { label: 'Klamath Mountains', color: '#C4EF83' },
-    'Northern Basin and Range': { label: 'Northern Basin and Range', color: '#C1B28D' },
-    'Eastern Cascades Slopes and Foothills': { label: 'Eastern Cascades', color: '#98A162' }
+    'Coast Range': { label: 'Coast Range', color: '#ABB9D1', lon: -123.81, lat: 43.68 },
+    'Columbia Plateau': { label: 'Columbia Plateau', color: '#FED55B', lon: 0, lat: 0 },
+    'Blue Mountains': { label: 'Blue Mountains', color: '#CDD4A7', lon: -118.95, lat: 44.85 },
+    'Snake River Plain': { label: 'Snake River Plain', color: '#E89B6F', lon: 0, lat: 0 },
+    'Willamette Valley': { label: 'Willamette Valley', color: '#B57F22', lon: -123.01, lat: 45.13 },
+    'Cascades': { label: 'Cascades', color: '#7CBA82', lon: -122.52, lat: 43.54 },
+    'Klamath Mountains/California High North Coast Range': { label: 'Klamath Mountains', color: '#C4EF83', lon: -123.36, lat: 42.40 },
+    'Northern Basin and Range': { label: 'Northern Basin and Range', color: '#C1B28D', lon: 0, lat: 0 },
+    'Eastern Cascades Slopes and Foothills': { label: 'Eastern Cascades', color: '#98A162', lon: -121.27, lat: 42.61 }
   }
 };
 
@@ -30466,6 +30469,7 @@ function setupView(viewer) {
     ecoregionsData.features.forEach(function (feature) {
       //console.log(config.ecoRegionColors[feature.properties.US_L3NAME], feature.properties.acres);
       var acres = parseInt(feature.properties.acres ? feature.properties.acres : 0);
+      // TODO: replace the below with a local data structure, not config
       _config.config.ecoRegionColors[feature.properties.US_L3NAME].acres = acres.toLocaleString(l, o);
       _config.config.ecoRegionColors[feature.properties.US_L3NAME].percent = (acres / statsAll.totalAcres).toLocaleString(l, p);
     });
@@ -30475,16 +30479,56 @@ function setupView(viewer) {
       ecoregionsDataSource.show = false;
 
       ecoregionsDataSource.entities.values.forEach(function (entity) {
-        if (!entity.position && entity.polygon) {
-          var center = Cesium.BoundingSphere.fromPoints(entity.polygon.hierarchy.getValue().positions).center;
-          entity.position = new Cesium.ConstantPositionProperty(center);
-        }
+        var eHeight = 0;
 
         if (entity.properties.acres) {
-          entity.polygon.closeBottom = true;
-          entity.polygon.closeTop = true;
-          entity.polygon.extrudedHeight = entity.properties.acres.getValue() / 40;
+          eHeight = entity.properties.acres.getValue() / 40;
         }
+        entity.polygon.closeBottom = false;
+        entity.polygon.closeTop = true;
+        entity.polygon.show = false;
+        //eHeight = (entity.properties.acres.getValue())/40;
+
+        entity.polygon.extrudedHeight = eHeight;
+
+        if (!entity.position && entity.polygon) {
+          var pos = entity.polygon.hierarchy.getValue().positions;
+          if (_config.config.ecoRegionColors[entity.properties.US_L3NAME.getValue()].lat) {
+            entity.position = new Cesium.ConstantPositionProperty(Cesium.Cartesian3.fromDegrees(_config.config.ecoRegionColors[entity.properties.US_L3NAME.getValue()].lon, _config.config.ecoRegionColors[entity.properties.US_L3NAME.getValue()].lat));
+          } else {
+            var center = Cesium.BoundingSphere.fromPoints(pos).center;
+            entity.position = new Cesium.ConstantPositionProperty(center);
+          }
+
+          var labelText = _config.config.ecoRegionColors[entity.properties.US_L3NAME.getValue()].label.toUpperCase().replace(/ /g, '\n');
+          if (_config.config.ecoRegionColors[entity.properties.US_L3NAME.getValue()].acres != 0) {
+            labelText += '\n(' + _config.config.ecoRegionColors[entity.properties.US_L3NAME.getValue()].acres + 'A ' + _config.config.ecoRegionColors[entity.properties.US_L3NAME.getValue()].percent + ')';
+          }
+          if (pos.length > 100) {
+            entity.label = new Cesium.LabelGraphics({
+              text: labelText,
+              /*pixelOffset: new Cesium.Cartesian2(
+                config.ecoRegionColors[entity.properties.US_L3NAME.getValue()].pixelOffsetX,
+                config.ecoRegionColors[entity.properties.US_L3NAME.getValue()].pixelOffsetY
+              ),*/
+              //eyeOffset: new Cesium.Cartesian3(0.0, eHeight + 100000, 0.0),
+              font: new Cesium.ConstantProperty('14px sans-serif'),
+              fillColor: Cesium.Color.WHITE,
+              outlineColor: Cesium.Color.BLACK,
+              outlineWidth: 3,
+              style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+              heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+              scaleByDistance: new Cesium.ConstantProperty(new Cesium.NearFarScalar(2e5, 2, 1.8e6, 0.1))
+            });
+          }
+
+          entity.corridor = new Cesium.CorridorGraphics({
+            positions: pos,
+            width: 4000,
+            extrudedHeight: eHeight
+          });
+        }
+        //entity.polygon = undefined;
       });
 
       $('#loadingIndicator').hide();
@@ -30517,6 +30561,10 @@ function colorizeDataSourceEntities(dataSource, alpha, id) {
   dataSource.entities.values.forEach(function (entity) {
 
     entity.polygon.material = Cesium.Color.fromCssColorString(_config.config.ecoRegionColors[id ? getEcoregionNameForId(id) : entity.name].color).withAlpha(alpha);
+
+    if (entity.corridor) {
+      entity.corridor.material = Cesium.Color.fromCssColorString(_config.config.ecoRegionColors[id ? getEcoregionNameForId(id) : entity.name].color).withAlpha(1);
+    }
 
     entity.polygon.outlineWidth = 0;
     entity.polygon.outlineColor = Cesium.Color.fromCssColorString(_config.config.ecoRegionColors[id ? getEcoregionNameForId(id) : entity.name].color).withAlpha(alpha);
@@ -30567,11 +30615,12 @@ function gotoAll() {
   $('#infoPanel').html((0, _ecopwildernessListInfoPanel2.default)({
     labels: _config.config.ecoRegionColors
   }));
-  $('#infoPanelTransparency').change(function () {
-    var t = $(this).val() / 100;
+  colorizeDataSourceEntities(ecoregionsDataSource, 1);
+  /*$('#infoPanelTransparency').change(function() {
+    var t=($(this).val())/100;
     colorizeDataSourceEntities(ecoregionsDataSource, t);
   });
-  $('#infoPanelTransparency').change();
+  $('#infoPanelTransparency').change();*/
   if (savedState) {
     _viewer.dataSources.remove(savedState.dataSource, true);
   }
@@ -50625,23 +50674,21 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 var Handlebars = __webpack_require__(10);
 function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj); }
 module.exports = (Handlebars["default"] || Handlebars).template({"1":function(container,depth0,helpers,partials,data) {
-    var helper, alias1=container.lambda, alias2=container.escapeExpression, alias3=depth0 != null ? depth0 : {}, alias4=helpers.helperMissing, alias5="function";
+    var helper, alias1=container.escapeExpression, alias2=depth0 != null ? depth0 : {}, alias3=helpers.helperMissing, alias4="function";
 
-  return "          <li><span class=\"legend-item\" style=\"background:"
-    + alias2(alias1((depth0 != null ? depth0.color : depth0), depth0))
-    + ";\"></span><b> "
-    + alias2(alias1((depth0 != null ? depth0.label : depth0), depth0))
-    + "</b></li>\n          <li><span class=\"legend-item\"></span> ("
-    + alias2(((helper = (helper = helpers.acres || (depth0 != null ? depth0.acres : depth0)) != null ? helper : alias4),(typeof helper === alias5 ? helper.call(alias3,{"name":"acres","hash":{},"data":data}) : helper)))
+  return "          <li></span><b>"
+    + alias1(container.lambda((depth0 != null ? depth0.label : depth0), depth0))
+    + "</b>("
+    + alias1(((helper = (helper = helpers.acres || (depth0 != null ? depth0.acres : depth0)) != null ? helper : alias3),(typeof helper === alias4 ? helper.call(alias2,{"name":"acres","hash":{},"data":data}) : helper)))
     + " Acres, "
-    + alias2(((helper = (helper = helpers.percent || (depth0 != null ? depth0.percent : depth0)) != null ? helper : alias4),(typeof helper === alias5 ? helper.call(alias3,{"name":"percent","hash":{},"data":data}) : helper)))
+    + alias1(((helper = (helper = helpers.percent || (depth0 != null ? depth0.percent : depth0)) != null ? helper : alias3),(typeof helper === alias4 ? helper.call(alias2,{"name":"percent","hash":{},"data":data}) : helper)))
     + ")</li>\n";
 },"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1;
 
   return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><b>Potential Wilderness Areas</b></div>\n  <div><small>(Click on an ecoregion to view areas)</small></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Ecoregions</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n"
     + ((stack1 = helpers.each.call(depth0 != null ? depth0 : {},(depth0 != null ? depth0.labels : depth0),{"name":"each","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
-    + "        </ul>\n      </div>\n    </div>\n  </div>\n  <div id=\"transparencyLegend\" class=\"legend-box\">\n    <div class=\"legend-title\">Transparency</div>\n    <div style=\"margin: 4px;\"><input id=\"infoPanelTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"100\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Wilderness Acreage</div>\n    <div class=\"legend-scale\">\n      <ul>\n        <li style='width: 80px;'><span class='sshape' style='width: 60px; height: 20px;'></span><br>Less</li>\n        <li style='width: 80px;'><span class='lshape' style='width: 60px; height: 40px;'></span><br> More</li>\n      </ul>\n    </div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Source: <a href=\"http://www.oregonwild.org/\" target=\"_blank\">Oregon Wild</a></div>\n</div>\n";
+    + "        </ul>\n      </div>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Wilderness Acreage</div>\n    <div class=\"legend-scale\">\n      <ul>\n        <li style='width: 80px;'><span class='sshape' style='width: 60px; height: 20px;'></span><br>Less</li>\n        <li style='width: 80px;'><span class='lshape' style='width: 60px; height: 40px;'></span><br> More</li>\n      </ul>\n    </div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Source: <a href=\"http://www.oregonwild.org/\" target=\"_blank\">Oregon Wild</a></div>\n</div>\n";
 },"useData":true});
 
 /***/ }),
