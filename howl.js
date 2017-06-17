@@ -51210,7 +51210,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 
   return "          <li></span><b>"
     + alias1(container.lambda((depth0 != null ? depth0.label : depth0), depth0))
-    + "</b>("
+    + "</b> ("
     + alias1(((helper = (helper = helpers.acres || (depth0 != null ? depth0.acres : depth0)) != null ? helper : alias3),(typeof helper === alias4 ? helper.call(alias2,{"name":"acres","hash":{},"data":data}) : helper)))
     + " Acres, "
     + alias1(((helper = (helper = helpers.percent || (depth0 != null ? depth0.percent : depth0)) != null ? helper : alias3),(typeof helper === alias4 ? helper.call(alias2,{"name":"percent","hash":{},"data":data}) : helper)))
