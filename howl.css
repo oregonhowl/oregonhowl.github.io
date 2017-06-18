@@ -8005,6 +8005,10 @@ html, body, #viewContainer {
 }
 
 #logo:hover {
+  cursor: pointer;
+  margin-top: 3px;
+  height: 47px;
+  width: 60px;
   background: url(./fonts/howlwhite.svg);
   background-size: 55px;
   background-repeat: no-repeat;
@@ -8485,13 +8489,14 @@ ul.legend-items li span {
 }
 
 .img-hover-effect {
-  transition: all ease 0.5s;
+  /* Unfortunately transition below craps out on IE Edge */
+  /*transition: all ease 0.5s; */
   filter: grayscale(90%);
   /*opacity: 0.9;*/
 }
 
 .img-hover-effect:hover {
-  filter: grayscale(0);
+  filter: grayscale(0%);
   /*opacity: 1;*/
 }
 
