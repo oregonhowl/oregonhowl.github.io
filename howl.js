@@ -30826,6 +30826,7 @@ function setupView(viewer) {
                 or7CZML.forEach(function (item) {
                   if (item.corridor) {
                     var w = corridorWidth(_viewer.camera.positionCartographic.height);
+                    w = item.properties.isBorder ? w * 2 : w;
                     if (w != or7dataSource.entities.getById(item.id).corridor.width) {
                       or7dataSource.entities.getById(item.id).corridor.width = w;
                     }
@@ -30884,12 +30885,8 @@ function setupView(viewer) {
 }
 
 function corridorWidth(h) {
-  // This array should probably go to config
-  var t = [[1000000, 8000], [600000, 4000], [100000, 3000], [40000, 2000], [20000, 1000], [10000, 500]];
-  for (var i = 0; i < t.length; i++) {
-    if (h >= t[i][0]) return t[i][1];
-  }
-  return t[t.length - 1][1];
+  var w = h > 500000 ? h / 100 : h / 50;
+  return Math.min(20 * Math.round(w / 20), 2000);
 }
 
 function makeCZMLforOR7(callback) {
@@ -30904,17 +30901,13 @@ function makeCZMLforOR7(callback) {
     clock: {
       interval: '',
       currentTime: '',
-      multiplier: 525949,
+      multiplier: 262975,
       range: 'CLAMPED',
       step: 'SYSTEM_CLOCK_MULTIPLIER'
     }
   }, {
     id: 'or7journey',
     availability: '',
-    properties: {
-      'howlHasFeaturePopUp': true,
-      'howlOverridePopUpContent': 'I am OR-7'
-    },
     model: {
       gltf: 'data/or7/model/wolf.gltf',
       scale: 1.5,
@@ -30939,22 +30932,22 @@ function makeCZMLforOR7(callback) {
     }
   }];
 
-  function CorridorItem(id, prop) {
+  function CorridorItem(id, prop, colorOverrride) {
 
     this.id = 'or7journey-c-' + id, this.properties = {
-      'howlHasFeaturePopUp': true,
-      'howlOverridePopUpContent': 'OR-7 journey path'
+      isBorder: colorOverrride ? true : false
     };
     this.position = { cartographicDegrees: [] };
     this.corridor = {
-      width: 4000,
+      width: colorOverrride ? 2 * corridorWidth(600000) : corridorWidth(600000),
       material: {
         solidColor: {
           color: {
-            rgba: getColor(prop)
+            rgba: colorOverrride ? Cesium.Color.fromCssColorString(colorOverrride).toBytes() : getColor(prop)
           }
         }
       },
+      cornerType: 'MITERED',
       positions: {
         cartographicDegrees: []
       }
@@ -30988,6 +30981,27 @@ function makeCZMLforOR7(callback) {
     };
   }
 
+  /*function LabelItem(id, prop, text) {
+     this.id = 'or7journey-l-' + id;
+    this.properties = prop;
+    //this.position = {cartographicDegrees: []};
+    if (prop.entryDate) {
+      this.availability = (new Date(prop.entryDate)).toISOString() + '/';
+      if (prop.exitDate) {
+        this.availability += (new Date(prop.exitDate)).toISOString();
+      } else {
+        this.availability += (new Date()).toISOString();
+      }
+    }
+    this.label = {
+      positions: {
+        cartographicDegrees: []
+      },
+      text: text,
+      fillColor: (Cesium.Color.BLACK)
+    }
+  }*/
+
   function getColor(properties) {
     var color = [255, 255, 255, 255];
     if (properties && properties.fill) {
@@ -30998,104 +31012,124 @@ function makeCZMLforOR7(callback) {
   }
 
   data.getJSONData('data/or7/or7entriesF.json', function (entries) {
+    data.getJSONData('data/or7/or7areascrossed.json', function (xareas) {
 
-    // Assumption: first entry matches first coordinate and last entry matches last coordinate
-    var fromDate = new Date(entries.features[0].properties.entryDate).toISOString();
-    var toDate = new Date(entries.features[entries.features.length - 1].properties.entryDate).toISOString();
-    or7CZML[0].clock.interval = fromDate + '/' + toDate;
-    or7CZML[1].availability = or7CZML[0].clock.interval;
-    or7CZML[0].clock.currentTime = fromDate;
+      // Assumption: first entry matches first coordinate and last entry matches last coordinate
+      var fromDate = new Date(entries.features[0].properties.entryDate).toISOString();
+      var toDate = new Date(entries.features[entries.features.length - 1].properties.entryDate).toISOString();
+      or7CZML[0].clock.interval = fromDate + '/' + toDate;
+      or7CZML[1].availability = or7CZML[0].clock.interval;
+      or7CZML[0].clock.currentTime = fromDate;
 
-    initStats(fromDate, toDate);
+      initStats(fromDate, toDate);
 
-    var logEntries = [];
-    for (var i = 0; i < entries.features.length; i++) {
-      if (i > 0) {
-        // Compute segment durations
-        durations.push(calcDuration(entries.features[i].properties.entryDate, entries.features[i - 1].properties.entryDate));
+      var logEntries = [];
+      for (var i = 0; i < entries.features.length; i++) {
+        if (i > 0) {
+          // Compute segment durations
+          durations.push(calcDuration(entries.features[i].properties.entryDate, entries.features[i - 1].properties.entryDate));
+        }
+        // Update czml custom properties
+        var d1 = new Date(entries.features[i].properties.entryDate).toISOString();
+        var d2 = i === entries.features.length - 1 ? d1 : new Date(entries.features[i + 1].properties.entryDate).toISOString();
+        or7CZML[2].properties.entries.push({
+          interval: d1 + '/' + d2,
+          string: entries.features[i].properties.entryInfo
+        });
+        // Update entry log info for panel
+        logEntries.push({
+          date: new Date(entries.features[i].properties.entryDate).toLocaleDateString('en-US', labelDateOptions),
+          info: entries.features[i].properties.entryInfo
+        });
       }
-      // Update czml custom properties
-      var d1 = new Date(entries.features[i].properties.entryDate).toISOString();
-      var d2 = i === entries.features.length - 1 ? d1 : new Date(entries.features[i + 1].properties.entryDate).toISOString();
-      or7CZML[2].properties.entries.push({
-        interval: d1 + '/' + d2,
-        string: entries.features[i].properties.entryInfo
+      $('#logEntries').html((0, _or7LogEntries2.default)({ logEntries: logEntries }));
+
+      // Calculate leg distances
+      var distances = new Array(durations.length).fill(0);
+      var entryIndex = 0;
+      or7data.features.forEach(function (or7f) {
+        if (or7f.geometry.type === 'LineString') {
+          or7f.geometry.coordinates.forEach(function (or7Coord) {
+            if (isSameCoordinates(or7Coord, entries.features[entryIndex].geometry.coordinates)) {
+              entryIndex++;
+            } else {
+              distances[entryIndex] += calcDistance(prevCoord, or7Coord);
+            }
+            prevCoord = or7Coord;
+          });
+        }
       });
-      // Update entry log info for panel
-      logEntries.push({
-        date: new Date(entries.features[i].properties.entryDate).toLocaleDateString('en-US', labelDateOptions),
-        info: entries.features[i].properties.entryInfo
+
+      // Interpolate time
+      var sumD = 0;
+      var cumD = 0;
+      entryIndex = 0;
+      var itemId = 0;
+      or7data.features.forEach(function (or7f) {
+        if (or7f.geometry.type === 'LineString') {
+          var corridorItem = new CorridorItem(itemId++, or7f.properties);
+          var corridorOutlineItem = new CorridorItem(itemId++, or7f.properties, '#8D6E27');
+          corridorItem.position.cartographicDegrees.push(or7f.geometry.coordinates[0][0], or7f.geometry.coordinates[0][1], or7f.geometry.coordinates[0][2]);
+          or7f.geometry.coordinates.forEach(function (or7Coord) {
+            var iDate;
+            if (isSameCoordinates(or7Coord, entries.features[entryIndex].geometry.coordinates)) {
+              iDate = new Date(entries.features[entryIndex].properties.entryDate).toISOString();
+              or7CZML[1].position.cartographicDegrees.push(iDate);
+              sumD = 0;
+              //prevCoord = or7Coord;
+              entryIndex++;
+            } else {
+              //var distance = calcDistance(prevCoord, or7Coord);
+              sumD += calcDistance(prevCoord, or7Coord);
+              //cumD += distance;
+              var ratio = sumD / distances[entryIndex];
+              iDate = new Date(Date.parse(entries.features[entryIndex - 1].properties.entryDate) + ratio * durations[entryIndex]).toISOString();
+              or7CZML[1].position.cartographicDegrees.push(iDate);
+            }
+            cumD += calcDistance(prevCoord, or7Coord);
+            updateStats(iDate, cumD, or7Coord[2]);
+            prevCoord = or7Coord;
+            or7CZML[1].position.cartographicDegrees.push(or7Coord[0]);
+            or7CZML[1].position.cartographicDegrees.push(or7Coord[1]);
+            or7CZML[1].position.cartographicDegrees.push(0);
+            corridorItem.corridor.positions.cartographicDegrees.push(or7Coord[0]);
+            corridorItem.corridor.positions.cartographicDegrees.push(or7Coord[1]);
+            corridorItem.corridor.positions.cartographicDegrees.push(0);
+            corridorOutlineItem.corridor.positions.cartographicDegrees.push(or7Coord[0]);
+            corridorOutlineItem.corridor.positions.cartographicDegrees.push(or7Coord[1]);
+            corridorOutlineItem.corridor.positions.cartographicDegrees.push(0);
+          });
+          or7CZML.push(corridorOutlineItem);
+          or7CZML.push(corridorItem);
+        }
+        if (or7f.geometry.type === 'Polygon') {
+          var polygonItem = new PolygonItem(itemId++, or7f.properties);
+          polygonItem.position.cartographicDegrees.push(or7f.geometry.coordinates[0][0][0], or7f.geometry.coordinates[0][0][1], or7f.geometry.coordinates[0][0][2]);
+          or7f.geometry.coordinates[0].forEach(function (or7Coord) {
+            polygonItem.polygon.positions.cartographicDegrees.push(or7Coord[0]);
+            polygonItem.polygon.positions.cartographicDegrees.push(or7Coord[1]);
+            polygonItem.polygon.positions.cartographicDegrees.push(0);
+          });
+          or7CZML.push(polygonItem);
+        }
       });
-    }
-    $('#logEntries').html((0, _or7LogEntries2.default)({ logEntries: logEntries }));
 
-    // Calculate leg distances
-    var distances = new Array(durations.length).fill(0);
-    var entryIndex = 0;
-    or7data.features.forEach(function (or7f) {
-      if (or7f.geometry.type === 'LineString') {
-        or7f.geometry.coordinates.forEach(function (or7Coord) {
-          if (isSameCoordinates(or7Coord, entries.features[entryIndex].geometry.coordinates)) {
-            entryIndex++;
-          } else {
-            distances[entryIndex] += calcDistance(prevCoord, or7Coord);
-          }
-          prevCoord = or7Coord;
-        });
-      }
+      xareas.features.forEach(function (xarea) {
+        if (xarea.geometry.type === 'Polygon') {
+          var polygonItem = new PolygonItem(itemId++, xarea.properties);
+          polygonItem.position.cartographicDegrees.push(xarea.geometry.coordinates[0][0][0], xarea.geometry.coordinates[0][0][1], 0);
+          xarea.geometry.coordinates[0].forEach(function (xareaCoord) {
+            polygonItem.polygon.positions.cartographicDegrees.push(xareaCoord[0]);
+            polygonItem.polygon.positions.cartographicDegrees.push(xareaCoord[1]);
+            polygonItem.polygon.positions.cartographicDegrees.push(0);
+          });
+          or7CZML.push(polygonItem);
+        }
+      });
+      fixStats();
+
+      callback(or7CZML);
     });
-
-    // Interpolate time
-    var sumD = 0;
-    var cumD = 0;
-    entryIndex = 0;
-    var itemId = 0;
-    or7data.features.forEach(function (or7f) {
-      if (or7f.geometry.type === 'LineString') {
-        var corridorItem = new CorridorItem(itemId++, or7f.properties);
-        corridorItem.position.cartographicDegrees.push(or7f.geometry.coordinates[0][0], or7f.geometry.coordinates[0][1], or7f.geometry.coordinates[0][2]);
-        or7f.geometry.coordinates.forEach(function (or7Coord) {
-          var iDate;
-          if (isSameCoordinates(or7Coord, entries.features[entryIndex].geometry.coordinates)) {
-            iDate = new Date(entries.features[entryIndex].properties.entryDate).toISOString();
-            or7CZML[1].position.cartographicDegrees.push(iDate);
-            sumD = 0;
-            //prevCoord = or7Coord;
-            entryIndex++;
-          } else {
-            //var distance = calcDistance(prevCoord, or7Coord);
-            sumD += calcDistance(prevCoord, or7Coord);
-            //cumD += distance;
-            var ratio = sumD / distances[entryIndex];
-            iDate = new Date(Date.parse(entries.features[entryIndex - 1].properties.entryDate) + ratio * durations[entryIndex]).toISOString();
-            or7CZML[1].position.cartographicDegrees.push(iDate);
-          }
-          cumD += calcDistance(prevCoord, or7Coord);
-          updateStats(iDate, cumD, or7Coord[2]);
-          prevCoord = or7Coord;
-          or7CZML[1].position.cartographicDegrees.push(or7Coord[0]);
-          or7CZML[1].position.cartographicDegrees.push(or7Coord[1]);
-          or7CZML[1].position.cartographicDegrees.push(0);
-          corridorItem.corridor.positions.cartographicDegrees.push(or7Coord[0]);
-          corridorItem.corridor.positions.cartographicDegrees.push(or7Coord[1]);
-          corridorItem.corridor.positions.cartographicDegrees.push(0);
-        });
-        or7CZML.push(corridorItem);
-      }
-      if (or7f.geometry.type === 'Polygon') {
-        var polygonItem = new PolygonItem(itemId++, or7f.properties);
-        polygonItem.position.cartographicDegrees.push(or7f.geometry.coordinates[0][0][0], or7f.geometry.coordinates[0][0][1], or7f.geometry.coordinates[0][0][2]);
-        or7f.geometry.coordinates[0].forEach(function (or7Coord) {
-          polygonItem.polygon.positions.cartographicDegrees.push(or7Coord[0]);
-          polygonItem.polygon.positions.cartographicDegrees.push(or7Coord[1]);
-          polygonItem.polygon.positions.cartographicDegrees.push(0);
-        });
-        or7CZML.push(polygonItem);
-      }
-    });
-    fixStats();
-
-    callback(or7CZML);
   });
 }
 
@@ -51345,7 +51379,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 var Handlebars = __webpack_require__(7);
 function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj); }
 module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
-    return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><b>The Journey of OR-7</b></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Timeline playback</div>\n    <div class=\"legend-subtitle\">[Running @ <b><span id='secsperyear'>3</span></b> seconds per year]</div>\n    <div class=\"playback-controls\">\n      <div>\n        <div class=\"howl-control\">\n          <a id=\"pb-slower\" href=\"#\" title=\"Faster\"><img src=\"" + __webpack_require__(129) + "\"></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-start\" href=\"#\" title=\"Start\"><span class=\"glyphicon glyphicon-step-backward\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-play\" href=\"#\" title=\"Play/Pause\"><span class=\"glyphicon glyphicon-play\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-end\" href=\"#\" title=\"End\"><span class=\"glyphicon glyphicon-step-forward\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-faster\" href=\"#\" title=\"Faster\"><img src=\"" + __webpack_require__(128) + "\"></a>\n        </div>\n      </div>\n    </div>\n    <div class=\"legend-explanation\">Use buttons for playback control</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR7 Expedition Story Map</div>\n    <div class=\"legend-entry\"><span><input id=\"story-map-overlay\" type=\"checkbox\"></span> Display story map overlay</div>\n    <div style=\"margin: 4px;\"><input id=\"infoPanelTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Journey log</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <ul id=\"logEntries\" class=\"v-legend-items\">\n      </ul>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR-7 Information Links</div>\n    <div class=\"legend-entry\" style=\"text-align: center; margin-left: 4px;\">\n      <ul class=\"v-legend-items\">\n        <div class=\"hline\"></div>\n        <div>Oregon Wild</div>\n        <a href=\"http://www.oregonwild.org/wildlife/wolves/the-journey-of-or7\" target=\"_blank\">Don't Stop Believing: The Journey of OR-7</a><br>\n        <div class=\"hline\"></div>\n        <div>Oregon Department of Fish and Wildlife</div>\n        <a href=\"http://www.dfw.state.or.us/Wolves/index.asp\" target=\"_blank\">Wolves in Oregon</a><br>\n        <a href=\"https://www.flickr.com/photos/odfw/sets/72157623481759903/\" target=\"_blank\">Photos - Mammals: Canine; Wolves</a><br>\n        <a href=\"http://www.dfw.state.or.us/Wolves/Packs/Rogue.asp\" target=\"_blank\">Rogue Pack</a><br>\n        <div class=\"hline\"></div>\n        <div>California Department of Fish and Wildlife</div>\n        <a href=\"https://www.wildlife.ca.gov/Conservation/Mammals/Gray-Wolf/OR7-Story\" target=\"_blank\">OR-7 – A Lone Wolf's Story</a><br>\n        <div class=\"hline\"></div>\n        <div>Documentaries</div>\n        <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a><br>\n        <a href=\"https://www.or7themovie.com/\" target=\"_blank\">OR7 - The Journey</a>\n        <div class=\"hline\"></div>\n        <div>Books</div>\n        <a href=\"https://www.amazon.com/Journey-Amazing-7-Oregon-History/dp/1629013994\" target=\"_blank\">Journey: The Amazing Story of OR-7</a><br>\n        <a href=\"https://www.amazon.com/Journey-Based-True-Story-Famous/dp/1632170655\" target=\"_blank\">Journey: Based on the True Story of OR7</a>\n\n      </ul>\n    </div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Sources:\n    <a href=\"http://www.oregonwild.org/\" target=\"_blank\">Oregon Wild</a>,\n    <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a>\n  </div>\n</div>\n";
+    return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><b>The Journey of OR-7</b></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Timeline playback</div>\n    <div class=\"legend-subtitle\">[Running @ <b><span id='secsperyear'>3</span></b> seconds per year]</div>\n    <div class=\"playback-controls\">\n      <div>\n        <div class=\"howl-control\">\n          <a id=\"pb-slower\" href=\"#\" title=\"Faster\"><img src=\"" + __webpack_require__(129) + "\"></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-start\" href=\"#\" title=\"Start\"><span class=\"glyphicon glyphicon-step-backward\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-play\" href=\"#\" title=\"Play/Pause\"><span class=\"glyphicon glyphicon-play\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-end\" href=\"#\" title=\"End\"><span class=\"glyphicon glyphicon-step-forward\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-faster\" href=\"#\" title=\"Faster\"><img src=\"" + __webpack_require__(128) + "\"></a>\n        </div>\n      </div>\n    </div>\n    <div class=\"legend-explanation\">Use buttons for playback control</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Wilderness Crossings</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style='background:#08ff00;'></span> Wilderness Area</li>\n          <li><span class=\"legend-item\" style='background:#d0ff00;'></span> Potential Wilderness Area</li>\n        </ul>\n      </div>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Hangout Areas</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style='background:#808000;'></span> Klamath Wander Area</li>\n          <li><span class=\"legend-item\" style='background:#996633;'></span> Oregon Residence Area</li>\n        </ul>\n      </div>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR7 Expedition Story Map</div>\n    <div class=\"legend-entry\"><span><input id=\"story-map-overlay\" type=\"checkbox\"></span> Display story map overlay</div>\n    <div style=\"margin: 4px;\"><input id=\"infoPanelTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Journey log</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <ul id=\"logEntries\" class=\"v-legend-items\">\n      </ul>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR-7 Information Links</div>\n    <div class=\"legend-entry\" style=\"text-align: center; margin-left: 4px;\">\n      <ul class=\"v-legend-items\">\n        <div class=\"hline\"></div>\n        <div>Oregon Wild</div>\n        <a href=\"http://www.oregonwild.org/wildlife/wolves/the-journey-of-or7\" target=\"_blank\">Don't Stop Believing: The Journey of OR-7</a><br>\n        <div class=\"hline\"></div>\n        <div>Oregon Department of Fish and Wildlife</div>\n        <a href=\"http://www.dfw.state.or.us/Wolves/index.asp\" target=\"_blank\">Wolves in Oregon</a><br>\n        <a href=\"https://www.flickr.com/photos/odfw/sets/72157623481759903/\" target=\"_blank\">Photos - Mammals: Canine; Wolves</a><br>\n        <a href=\"http://www.dfw.state.or.us/Wolves/Packs/Rogue.asp\" target=\"_blank\">Rogue Pack</a><br>\n        <div class=\"hline\"></div>\n        <div>California Department of Fish and Wildlife</div>\n        <a href=\"https://www.wildlife.ca.gov/Conservation/Mammals/Gray-Wolf/OR7-Story\" target=\"_blank\">OR-7 – A Lone Wolf's Story</a><br>\n        <div class=\"hline\"></div>\n        <div>Documentaries</div>\n        <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a><br>\n        <a href=\"https://www.or7themovie.com/\" target=\"_blank\">OR7 - The Journey</a>\n        <div class=\"hline\"></div>\n        <div>Books</div>\n        <a href=\"https://www.amazon.com/Journey-Amazing-7-Oregon-History/dp/1629013994\" target=\"_blank\">Journey: The Amazing Story of OR-7</a><br>\n        <a href=\"https://www.amazon.com/Journey-Based-True-Story-Famous/dp/1632170655\" target=\"_blank\">Journey: Based on the True Story of OR7</a>\n\n      </ul>\n    </div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Sources:\n    <a href=\"http://www.oregonwild.org/\" target=\"_blank\">Oregon Wild</a>,\n    <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a>\n  </div>\n</div>\n";
 },"useData":true});
 
 /***/ }),
