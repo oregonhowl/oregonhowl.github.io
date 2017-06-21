@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 546);
+/******/ 	return __webpack_require__(__webpack_require__.s = 549);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1947,7 +1947,7 @@ function loadLocale(name) {
             module && module.exports) {
         try {
             oldLocale = globalLocale._abbr;
-            __webpack_require__(540)("./" + name);
+            __webpack_require__(543)("./" + name);
             // because defineLocale currently also sets the global locale, we
             // want to undo that for lazy loaded locales
             getSetGlobalLocale(oldLocale);
@@ -4582,7 +4582,7 @@ return hooks;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(545)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(548)(module)))
 
 /***/ }),
 /* 2 */
@@ -4645,41 +4645,11 @@ $exports.store = store;
 
 // Create a simple path alias to allow browserify to resolve
 // the runtime on a supported path.
-module.exports = __webpack_require__(523)['default'];
+module.exports = __webpack_require__(525)['default'];
 
 
 /***/ }),
 /* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// Thank's IE8 for his funny defineProperty
-module.exports = !__webpack_require__(4)(function(){
-  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
-});
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var anObject       = __webpack_require__(2)
-  , IE8_DOM_DEFINE = __webpack_require__(107)
-  , toPrimitive    = __webpack_require__(26)
-  , dP             = Object.defineProperty;
-
-exports.f = __webpack_require__(8) ? Object.defineProperty : function defineProperty(O, P, Attributes){
-  anObject(O);
-  P = toPrimitive(P, true);
-  anObject(Attributes);
-  if(IE8_DOM_DEFINE)try {
-    return dP(O, P, Attributes);
-  } catch(e){ /* empty */ }
-  if('get' in Attributes || 'set' in Attributes)throw TypeError('Accessors not supported!');
-  if('value' in Attributes)O[P] = Attributes.value;
-  return O;
-};
-
-/***/ }),
-/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -14500,6 +14470,36 @@ return jQuery;
 
 
 /***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// Thank's IE8 for his funny defineProperty
+module.exports = !__webpack_require__(4)(function(){
+  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
+});
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var anObject       = __webpack_require__(2)
+  , IE8_DOM_DEFINE = __webpack_require__(107)
+  , toPrimitive    = __webpack_require__(26)
+  , dP             = Object.defineProperty;
+
+exports.f = __webpack_require__(9) ? Object.defineProperty : function defineProperty(O, P, Attributes){
+  anObject(O);
+  P = toPrimitive(P, true);
+  anObject(Attributes);
+  if(IE8_DOM_DEFINE)try {
+    return dP(O, P, Attributes);
+  } catch(e){ /* empty */ }
+  if('get' in Attributes || 'set' in Attributes)throw TypeError('Accessors not supported!');
+  if('value' in Attributes)O[P] = Attributes.value;
+  return O;
+};
+
+/***/ }),
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14542,9 +14542,9 @@ module.exports = function(it){
 /* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var dP         = __webpack_require__(9)
+var dP         = __webpack_require__(10)
   , createDesc = __webpack_require__(33);
-module.exports = __webpack_require__(8) ? function(object, key, value){
+module.exports = __webpack_require__(9) ? function(object, key, value){
   return dP.f(object, key, createDesc(1, value));
 } : function(object, key, value){
   object[key] = value;
@@ -14635,7 +14635,7 @@ var pIE            = __webpack_require__(54)
   , IE8_DOM_DEFINE = __webpack_require__(107)
   , gOPD           = Object.getOwnPropertyDescriptor;
 
-exports.f = __webpack_require__(8) ? gOPD : function getOwnPropertyDescriptor(O, P){
+exports.f = __webpack_require__(9) ? gOPD : function getOwnPropertyDescriptor(O, P){
   O = toIObject(O);
   P = toPrimitive(P, true);
   if(IE8_DOM_DEFINE)try {
@@ -14869,7 +14869,7 @@ module.exports = {
 
 "use strict";
 
-if(__webpack_require__(8)){
+if(__webpack_require__(9)){
   var LIBRARY             = __webpack_require__(36)
     , global              = __webpack_require__(3)
     , fails               = __webpack_require__(4)
@@ -14906,7 +14906,7 @@ if(__webpack_require__(8)){
     , setSpecies          = __webpack_require__(41)
     , arrayFill           = __webpack_require__(69)
     , arrayCopyWithin     = __webpack_require__(100)
-    , $DP                 = __webpack_require__(9)
+    , $DP                 = __webpack_require__(10)
     , $GOPD               = __webpack_require__(19)
     , dP                  = $DP.f
     , gOPD                = $GOPD.f
@@ -15486,7 +15486,7 @@ function appendContextPath(contextPath, id) {
 var META     = __webpack_require__(43)('meta')
   , isObject = __webpack_require__(5)
   , has      = __webpack_require__(13)
-  , setDesc  = __webpack_require__(9).f
+  , setDesc  = __webpack_require__(10).f
   , id       = 0;
 var isExtensible = Object.isExtensible || function(){
   return true;
@@ -15665,8 +15665,8 @@ module.exports = function(target, src, safe){
 "use strict";
 
 var global      = __webpack_require__(3)
-  , dP          = __webpack_require__(9)
-  , DESCRIPTORS = __webpack_require__(8)
+  , dP          = __webpack_require__(10)
+  , DESCRIPTORS = __webpack_require__(9)
   , SPECIES     = __webpack_require__(6)('species');
 
 module.exports = function(KEY){
@@ -15711,7 +15711,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var config = exports.config = {
-  versionString: 'v0.2.0<sup>Beta</sup>',
+  versionString: 'v0.3.0<sup>Beta</sup>',
   bingAPIKey: 'AmN4YMNTJKsD0E-WG0AG935u5Cb1g92Z8SyCa1F-sJFAUppvyEMUJUrO2F-boadU',
   mapboxAccessToken: 'pk.eyJ1IjoiamltbXlhbmdlbCIsImEiOiJjaW5sMGR0cDkweXN2dHZseXl6OWM4YnloIn0.v2Sv_ODztWuLuk78rUoiqg',
   initialCameraView: {
@@ -15877,7 +15877,7 @@ module.exports = {};
 /* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var def = __webpack_require__(9).f
+var def = __webpack_require__(10).f
   , has = __webpack_require__(13)
   , TAG = __webpack_require__(6)('toStringTag');
 
@@ -16034,7 +16034,7 @@ function setPlaybackPauseMode() {
 function updateSpeedLabel(clockViewModel) {
   $('#secsperyear').text((31556926 / clockViewModel.multiplier).toFixed(2));
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 51 */
@@ -16137,7 +16137,7 @@ var viewdispatcher = exports.viewdispatcher = {
     });
   }
 };
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 52 */
@@ -16603,7 +16603,7 @@ exports.getJSONData = getJSONData;
 function getJSONData(path, successCallback, errorCallback) {
   $.getJSON(path, successCallback).fail(errorCallback);
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 69 */
@@ -16632,7 +16632,7 @@ module.exports = function fill(value /*, start = 0, end = @length */){
 
 "use strict";
 
-var $defineProperty = __webpack_require__(9)
+var $defineProperty = __webpack_require__(10)
   , createDesc      = __webpack_require__(33);
 
 module.exports = function(object, index, value){
@@ -17112,7 +17112,7 @@ module.exports = {
 "use strict";
 
 var global         = __webpack_require__(3)
-  , DESCRIPTORS    = __webpack_require__(8)
+  , DESCRIPTORS    = __webpack_require__(9)
   , LIBRARY        = __webpack_require__(36)
   , $typed         = __webpack_require__(67)
   , hide           = __webpack_require__(15)
@@ -17122,7 +17122,7 @@ var global         = __webpack_require__(3)
   , toInteger      = __webpack_require__(34)
   , toLength       = __webpack_require__(11)
   , gOPN           = __webpack_require__(38).f
-  , dP             = __webpack_require__(9).f
+  , dP             = __webpack_require__(10).f
   , arrayFill      = __webpack_require__(69)
   , setToStringTag = __webpack_require__(48)
   , ARRAY_BUFFER   = 'ArrayBuffer'
@@ -17392,7 +17392,7 @@ var global         = __webpack_require__(3)
   , core           = __webpack_require__(27)
   , LIBRARY        = __webpack_require__(36)
   , wksExt         = __webpack_require__(122)
-  , defineProperty = __webpack_require__(9).f;
+  , defineProperty = __webpack_require__(10).f;
 module.exports = function(name){
   var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
   if(name.charAt(0) != '_' && !(name in $Symbol))defineProperty($Symbol, name, {value: wksExt.f(name)});
@@ -17830,15 +17830,15 @@ var _config = __webpack_require__(44);
 
 var _viewdispatcher = __webpack_require__(51);
 
-var _homeContent = __webpack_require__(509);
+var _homeContent = __webpack_require__(510);
 
 var _homeContent2 = _interopRequireDefault(_homeContent);
 
-var _masonryLayout = __webpack_require__(539);
+var _masonryLayout = __webpack_require__(542);
 
 var _masonryLayout2 = _interopRequireDefault(_masonryLayout);
 
-var _imagesloaded = __webpack_require__(538);
+var _imagesloaded = __webpack_require__(540);
 
 var _imagesloaded2 = _interopRequireDefault(_imagesloaded);
 
@@ -17886,7 +17886,7 @@ function setupView(view) {
 function restoreView() {
   masonry.layout();
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 99 */
@@ -18012,7 +18012,7 @@ module.exports = Function.bind || function bind(that /*, args... */){
 
 "use strict";
 
-var dP          = __webpack_require__(9).f
+var dP          = __webpack_require__(10).f
   , create      = __webpack_require__(37)
   , redefineAll = __webpack_require__(40)
   , ctx         = __webpack_require__(28)
@@ -18022,7 +18022,7 @@ var dP          = __webpack_require__(9).f
   , $iterDefine = __webpack_require__(79)
   , step        = __webpack_require__(110)
   , setSpecies  = __webpack_require__(41)
-  , DESCRIPTORS = __webpack_require__(8)
+  , DESCRIPTORS = __webpack_require__(9)
   , fastKey     = __webpack_require__(32).fastKey
   , SIZE        = DESCRIPTORS ? '_s' : 'size';
 
@@ -18261,7 +18261,7 @@ module.exports = {
 /* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = !__webpack_require__(8) && !__webpack_require__(4)(function(){
+module.exports = !__webpack_require__(9) && !__webpack_require__(4)(function(){
   return Object.defineProperty(__webpack_require__(71)('div'), 'a', {get: function(){ return 7; }}).a != 7;
 });
 
@@ -18353,11 +18353,11 @@ module.exports = !$assign || __webpack_require__(4)(function(){
 /* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var dP       = __webpack_require__(9)
+var dP       = __webpack_require__(10)
   , anObject = __webpack_require__(2)
   , getKeys  = __webpack_require__(39);
 
-module.exports = __webpack_require__(8) ? Object.defineProperties : function defineProperties(O, Properties){
+module.exports = __webpack_require__(9) ? Object.defineProperties : function defineProperties(O, Properties){
   anObject(O);
   var keys   = getKeys(Properties)
     , length = keys.length
@@ -18542,7 +18542,7 @@ module.exports = __webpack_require__(58)('Map', function(get){
 /***/ (function(module, exports, __webpack_require__) {
 
 // 21.2.5.3 get RegExp.prototype.flags()
-if(__webpack_require__(8) && /./g.flags != 'g')__webpack_require__(9).f(RegExp.prototype, 'flags', {
+if(__webpack_require__(9) && /./g.flags != 'g')__webpack_require__(10).f(RegExp.prototype, 'flags', {
   configurable: true,
   get: __webpack_require__(60)
 });
@@ -18706,11 +18706,11 @@ var _exception = __webpack_require__(55);
 
 var _exception2 = _interopRequireDefault(_exception);
 
-var _helpers = __webpack_require__(526);
+var _helpers = __webpack_require__(528);
 
-var _decorators = __webpack_require__(524);
+var _decorators = __webpack_require__(526);
 
-var _logger = __webpack_require__(534);
+var _logger = __webpack_require__(536);
 
 var _logger2 = _interopRequireDefault(_logger);
 
@@ -29923,27 +29923,27 @@ var _utils = __webpack_require__(50);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _spotlightDropDown = __webpack_require__(516);
+var _spotlightDropDown = __webpack_require__(518);
 
 var _spotlightDropDown2 = _interopRequireDefault(_spotlightDropDown);
 
-var _navigationBar = __webpack_require__(511);
+var _navigationBar = __webpack_require__(512);
 
 var _navigationBar2 = _interopRequireDefault(_navigationBar);
 
-var _helpModal = __webpack_require__(508);
+var _helpModal = __webpack_require__(509);
 
 var _helpModal2 = _interopRequireDefault(_helpModal);
 
-var _aboutModal = __webpack_require__(502);
+var _aboutModal = __webpack_require__(503);
 
 var _aboutModal2 = _interopRequireDefault(_aboutModal);
 
-var _summaryModal = __webpack_require__(517);
+var _summaryModal = __webpack_require__(519);
 
 var _summaryModal2 = _interopRequireDefault(_summaryModal);
 
-var _contentPanel = __webpack_require__(503);
+var _contentPanel = __webpack_require__(504);
 
 var _contentPanel2 = _interopRequireDefault(_contentPanel);
 
@@ -29985,7 +29985,7 @@ if (utils.isWebGlSupported()) {
   // Go directly to home page with no WebGL support
   __webpack_require__(98).setupView();
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 249 */
@@ -29996,7 +29996,7 @@ if (utils.isWebGlSupported()) {
 
 __webpack_require__(495);
 
-__webpack_require__(544);
+__webpack_require__(547);
 
 __webpack_require__(315);
 
@@ -30055,11 +30055,11 @@ var _config = __webpack_require__(44);
 
 var _viewdispatcher = __webpack_require__(51);
 
-var _layerControl = __webpack_require__(510);
+var _layerControl = __webpack_require__(511);
 
 var _layerControl2 = _interopRequireDefault(_layerControl);
 
-var _featurePopUpContent = __webpack_require__(507);
+var _featurePopUpContent = __webpack_require__(508);
 
 var _featurePopUpContent2 = _interopRequireDefault(_featurePopUpContent);
 
@@ -30326,7 +30326,7 @@ function registerChartPlugins() {
     }
   });
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 253 */
@@ -30359,15 +30359,15 @@ var _utils = __webpack_require__(50);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _ecopwildernessListInfoPanel = __webpack_require__(506);
+var _ecopwildernessListInfoPanel = __webpack_require__(507);
 
 var _ecopwildernessListInfoPanel2 = _interopRequireDefault(_ecopwildernessListInfoPanel);
 
-var _ecopwildernessInfoPanel = __webpack_require__(505);
+var _ecopwildernessInfoPanel = __webpack_require__(506);
 
 var _ecopwildernessInfoPanel2 = _interopRequireDefault(_ecopwildernessInfoPanel);
 
-var _ecopwildernessChart = __webpack_require__(504);
+var _ecopwildernessChart = __webpack_require__(505);
 
 var _ecopwildernessChart2 = _interopRequireDefault(_ecopwildernessChart);
 
@@ -30684,7 +30684,7 @@ function setUpSummaryChart() {
     }
   });
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 254 */
@@ -30717,25 +30717,36 @@ var _utils = __webpack_require__(50);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _or7InfoPanel = __webpack_require__(513);
+var _or7InfoPanel = __webpack_require__(514);
 
 var _or7InfoPanel2 = _interopRequireDefault(_or7InfoPanel);
 
-var _or7LogEntries = __webpack_require__(514);
+var _or7LogEntries = __webpack_require__(515);
 
 var _or7LogEntries2 = _interopRequireDefault(_or7LogEntries);
 
-var _or7ViewLabel = __webpack_require__(515);
+var _or7ViewLabel = __webpack_require__(517);
 
 var _or7ViewLabel2 = _interopRequireDefault(_or7ViewLabel);
 
-var _or7Chart = __webpack_require__(512);
+var _or7Chart = __webpack_require__(513);
 
 var _or7Chart2 = _interopRequireDefault(_or7Chart);
+
+var _or7Photos = __webpack_require__(516);
+
+var _or7Photos2 = _interopRequireDefault(_or7Photos);
+
+__webpack_require__(541);
+
+__webpack_require__(497);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+//$('#whatever').magnificPopup({type:'image'}); --> example init
+
 
 var labelDateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
 
@@ -30841,6 +30852,28 @@ function setupView(viewer) {
             return false;
           });
 
+          $('#hangoutTransparency').change(function () {
+            var t = $(this).val() / 100;
+            or7dataSource.entities.values.forEach(function (entity) {
+              if (entity.polygon && entity.properties.getValue().areaType === 'hangout') {
+                entity.polygon.material = entity.polygon.material.color.getValue().withAlpha(t);
+              }
+            });
+          });
+          $('#hangoutTransparency').change();
+
+          $('#wildernessTransparency').change(function () {
+            var t = $(this).val() / 100;
+            or7dataSource.entities.values.forEach(function (entity) {
+              if (entity.polygon && entity.properties.getValue().areaType === 'wilderness') {
+                entity.polygon.material = entity.polygon.material.color.getValue().withAlpha(t);
+              }
+            });
+          });
+          $('#wildernessTransparency').change();
+
+          setUpViewPhotos();
+
           $('#viewLabel').html((0, _or7ViewLabel2.default)());
           $('#viewLabel').show();
 
@@ -30870,11 +30903,11 @@ function setupView(viewer) {
                 or7StoryMapLayer.show = false;
               }
             });
-            $('#infoPanelTransparency').change(function () {
+            $('#storymapTransparency').change(function () {
               var t = $(this).val() / 100;
               or7StoryMapLayer.alpha = t;
             });
-            $('#infoPanelTransparency').change();
+            $('#storymapTransparency').change();
           }
         });
 
@@ -30882,6 +30915,36 @@ function setupView(viewer) {
       });
     });
   });
+}
+
+function setUpViewPhotos() {
+  $('#viewPhotosContainer').html((0, _or7Photos2.default)());
+
+  $('.or7-photos-gallery').magnificPopup({
+    delegate: 'a',
+    type: 'image',
+    tLoading: 'Loading image #%curr%...',
+    mainClass: 'mfp-img-mobile',
+    gallery: {
+      enabled: true,
+      navigateByImgClick: true,
+      preload: [0, 1] // Will preload 0 - before current, and 1 after the current image
+    },
+    image: {
+      tError: '<a href="%url%">The image #%curr%</a> could not be loaded.',
+      titleSrc: function titleSrc(item) {
+        return item.el.attr('title') + '<small>' + item.el.attr('subtitle') + '<a class="home-button" href="' + item.el.attr('source') + '" target="_blank"> (image source)</a></small>';
+      }
+    }
+  });
+
+  $('#viewPhotosControl').click(function () {
+    $('#viewPhotosControl').blur();
+    $('#or7FirstPhoto').click();
+    return false;
+  });
+
+  $('#viewPhotosControl').show();
 }
 
 function corridorWidth(h) {
@@ -31217,6 +31280,9 @@ function wipeoutView() {
   $('#viewLabel').hide();
   $('#infoPanel').empty();
   $('#summaryChartContainer').empty();
+  $('#viewPhotosContainer').empty();
+
+  $('#viewPhotosControl').hide();
 
   viewerCallbacks.forEach(function (removeCallback) {
     if (removeCallback) {
@@ -31281,7 +31347,7 @@ function setUpSummaryChart() {
     }
   });
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 255 */
@@ -31314,23 +31380,23 @@ var _utils = __webpack_require__(50);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _fireListInfoPanel = __webpack_require__(520);
+var _fireListInfoPanel = __webpack_require__(522);
 
 var _fireListInfoPanel2 = _interopRequireDefault(_fireListInfoPanel);
 
-var _fireInfoBox = __webpack_require__(518);
+var _fireInfoBox = __webpack_require__(520);
 
 var _fireInfoBox2 = _interopRequireDefault(_fireInfoBox);
 
-var _fireInfoPanel = __webpack_require__(519);
+var _fireInfoPanel = __webpack_require__(521);
 
 var _fireInfoPanel2 = _interopRequireDefault(_fireInfoPanel);
 
-var _wildfiresViewLabel = __webpack_require__(522);
+var _wildfiresViewLabel = __webpack_require__(524);
 
 var _wildfiresViewLabel2 = _interopRequireDefault(_wildfiresViewLabel);
 
-var _wildfiresHistoryChart = __webpack_require__(521);
+var _wildfiresHistoryChart = __webpack_require__(523);
 
 var _wildfiresHistoryChart2 = _interopRequireDefault(_wildfiresHistoryChart);
 
@@ -31859,7 +31925,7 @@ function setUpSummaryChart(stats, statsAll) {
     }
   });
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 256 */
@@ -32046,7 +32112,7 @@ __webpack_require__(257)
 
 }(jQuery);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 258 */
@@ -32147,7 +32213,7 @@ __webpack_require__(257)
 
 }(jQuery);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 259 */
@@ -32279,7 +32345,7 @@ __webpack_require__(257)
 
 }(jQuery);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 260 */
@@ -32523,7 +32589,7 @@ __webpack_require__(257)
 
 }(jQuery);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 261 */
@@ -32742,7 +32808,7 @@ __webpack_require__(257)
 
 }(jQuery);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 262 */
@@ -32914,7 +32980,7 @@ __webpack_require__(257)
 
 }(jQuery);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 263 */
@@ -33260,7 +33326,7 @@ __webpack_require__(257)
 
 }(jQuery);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 264 */
@@ -33375,7 +33441,7 @@ __webpack_require__(257)
 
 }(jQuery);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 265 */
@@ -33554,7 +33620,7 @@ __webpack_require__(257)
 
 }(jQuery);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 266 */
@@ -33716,7 +33782,7 @@ __webpack_require__(257)
 
 }(jQuery);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 267 */
@@ -34243,7 +34309,7 @@ __webpack_require__(257)
 
 }(jQuery);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 268 */
@@ -34309,7 +34375,7 @@ __webpack_require__(257)
 
 }(jQuery);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 269 */
@@ -47385,7 +47451,7 @@ var isObject       = __webpack_require__(5)
   , HAS_INSTANCE   = __webpack_require__(6)('hasInstance')
   , FunctionProto  = Function.prototype;
 // 19.2.3.6 Function.prototype[@@hasInstance](V)
-if(!(HAS_INSTANCE in FunctionProto))__webpack_require__(9).f(FunctionProto, HAS_INSTANCE, {value: function(O){
+if(!(HAS_INSTANCE in FunctionProto))__webpack_require__(10).f(FunctionProto, HAS_INSTANCE, {value: function(O){
   if(typeof this != 'function' || !isObject(O))return false;
   if(!isObject(this.prototype))return O instanceof this;
   // for environment w/o native `@@hasInstance` logic enough `instanceof`, but add this:
@@ -47397,7 +47463,7 @@ if(!(HAS_INSTANCE in FunctionProto))__webpack_require__(9).f(FunctionProto, HAS_
 /* 352 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var dP         = __webpack_require__(9).f
+var dP         = __webpack_require__(10).f
   , createDesc = __webpack_require__(33)
   , has        = __webpack_require__(13)
   , FProto     = Function.prototype
@@ -47409,7 +47475,7 @@ var isExtensible = Object.isExtensible || function(){
 };
 
 // 19.2.4.2 name
-NAME in FProto || __webpack_require__(8) && dP(FProto, NAME, {
+NAME in FProto || __webpack_require__(9) && dP(FProto, NAME, {
   configurable: true,
   get: function(){
     try {
@@ -47718,7 +47784,7 @@ var global            = __webpack_require__(3)
   , fails             = __webpack_require__(4)
   , gOPN              = __webpack_require__(38).f
   , gOPD              = __webpack_require__(19).f
-  , dP                = __webpack_require__(9).f
+  , dP                = __webpack_require__(10).f
   , $trim             = __webpack_require__(49).trim
   , NUMBER            = 'Number'
   , $Number           = global[NUMBER]
@@ -47763,7 +47829,7 @@ if(!$Number(' 0o1') || !$Number('0b1') || $Number('+0x1')){
       && (BROKEN_COF ? fails(function(){ proto.valueOf.call(that); }) : cof(that) != NUMBER)
         ? inheritIfRequired(new Base(toNumber(it)), that, $Number) : toNumber(it);
   };
-  for(var keys = __webpack_require__(8) ? gOPN(Base) : (
+  for(var keys = __webpack_require__(9) ? gOPN(Base) : (
     // ES3:
     'MAX_VALUE,MIN_VALUE,NaN,NEGATIVE_INFINITY,POSITIVE_INFINITY,' +
     // ES6 (in case, if modules with ES6 Number statics required before):
@@ -48041,7 +48107,7 @@ $export($export.S, 'Object', {create: __webpack_require__(37)});
 
 var $export = __webpack_require__(0);
 // 19.1.2.3 / 15.2.3.7 Object.defineProperties(O, Properties)
-$export($export.S + $export.F * !__webpack_require__(8), 'Object', {defineProperties: __webpack_require__(113)});
+$export($export.S + $export.F * !__webpack_require__(9), 'Object', {defineProperties: __webpack_require__(113)});
 
 /***/ }),
 /* 385 */
@@ -48049,7 +48115,7 @@ $export($export.S + $export.F * !__webpack_require__(8), 'Object', {defineProper
 
 var $export = __webpack_require__(0);
 // 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
-$export($export.S + $export.F * !__webpack_require__(8), 'Object', {defineProperty: __webpack_require__(9).f});
+$export($export.S + $export.F * !__webpack_require__(9), 'Object', {defineProperty: __webpack_require__(10).f});
 
 /***/ }),
 /* 386 */
@@ -48616,7 +48682,7 @@ $export($export.S + $export.F * (NEW_TARGET_BUG || ARGS_BUG), 'Reflect', {
 /***/ (function(module, exports, __webpack_require__) {
 
 // 26.1.3 Reflect.defineProperty(target, propertyKey, attributes)
-var dP          = __webpack_require__(9)
+var dP          = __webpack_require__(10)
   , $export     = __webpack_require__(0)
   , anObject    = __webpack_require__(2)
   , toPrimitive = __webpack_require__(26);
@@ -48826,7 +48892,7 @@ if(setProto)$export($export.S, 'Reflect', {
 /***/ (function(module, exports, __webpack_require__) {
 
 // 26.1.13 Reflect.set(target, propertyKey, V [, receiver])
-var dP             = __webpack_require__(9)
+var dP             = __webpack_require__(10)
   , gOPD           = __webpack_require__(19)
   , getPrototypeOf = __webpack_require__(20)
   , has            = __webpack_require__(13)
@@ -48863,7 +48929,7 @@ $export($export.S, 'Reflect', {set: set});
 
 var global            = __webpack_require__(3)
   , inheritIfRequired = __webpack_require__(75)
-  , dP                = __webpack_require__(9).f
+  , dP                = __webpack_require__(10).f
   , gOPN              = __webpack_require__(38).f
   , isRegExp          = __webpack_require__(62)
   , $flags            = __webpack_require__(60)
@@ -48875,7 +48941,7 @@ var global            = __webpack_require__(3)
   // "new" creates a new object, old webkit buggy here
   , CORRECT_NEW       = new $RegExp(re1) !== re1;
 
-if(__webpack_require__(8) && (!CORRECT_NEW || __webpack_require__(4)(function(){
+if(__webpack_require__(9) && (!CORRECT_NEW || __webpack_require__(4)(function(){
   re2[__webpack_require__(6)('match')] = false;
   // RegExp constructor can alter flags and IsRegExp works correct with @@match
   return $RegExp(re1) != re1 || $RegExp(re2) == re2 || $RegExp(re1, 'i') != '/a/i';
@@ -49036,7 +49102,7 @@ __webpack_require__(59)('split', 2, function(defined, SPLIT, $split){
 __webpack_require__(124);
 var anObject    = __webpack_require__(2)
   , $flags      = __webpack_require__(60)
-  , DESCRIPTORS = __webpack_require__(8)
+  , DESCRIPTORS = __webpack_require__(9)
   , TO_STRING   = 'toString'
   , $toString   = /./[TO_STRING];
 
@@ -49417,7 +49483,7 @@ __webpack_require__(49)('trim', function($trim){
 // ECMAScript 6 symbols shim
 var global         = __webpack_require__(3)
   , has            = __webpack_require__(13)
-  , DESCRIPTORS    = __webpack_require__(8)
+  , DESCRIPTORS    = __webpack_require__(9)
   , $export        = __webpack_require__(0)
   , redefine       = __webpack_require__(16)
   , META           = __webpack_require__(32).KEY
@@ -49438,7 +49504,7 @@ var global         = __webpack_require__(3)
   , _create        = __webpack_require__(37)
   , gOPNExt        = __webpack_require__(114)
   , $GOPD          = __webpack_require__(19)
-  , $DP            = __webpack_require__(9)
+  , $DP            = __webpack_require__(10)
   , $keys          = __webpack_require__(39)
   , gOPD           = $GOPD.f
   , dP             = $DP.f
@@ -49959,10 +50025,10 @@ $export($export.S, 'Math', {
 var $export         = __webpack_require__(0)
   , toObject        = __webpack_require__(12)
   , aFunction       = __webpack_require__(14)
-  , $defineProperty = __webpack_require__(9);
+  , $defineProperty = __webpack_require__(10);
 
 // B.2.2.2 Object.prototype.__defineGetter__(P, getter)
-__webpack_require__(8) && $export($export.P + __webpack_require__(64), 'Object', {
+__webpack_require__(9) && $export($export.P + __webpack_require__(64), 'Object', {
   __defineGetter__: function __defineGetter__(P, getter){
     $defineProperty.f(toObject(this), P, {get: aFunction(getter), enumerable: true, configurable: true});
   }
@@ -49977,10 +50043,10 @@ __webpack_require__(8) && $export($export.P + __webpack_require__(64), 'Object',
 var $export         = __webpack_require__(0)
   , toObject        = __webpack_require__(12)
   , aFunction       = __webpack_require__(14)
-  , $defineProperty = __webpack_require__(9);
+  , $defineProperty = __webpack_require__(10);
 
 // B.2.2.3 Object.prototype.__defineSetter__(P, setter)
-__webpack_require__(8) && $export($export.P + __webpack_require__(64), 'Object', {
+__webpack_require__(9) && $export($export.P + __webpack_require__(64), 'Object', {
   __defineSetter__: function __defineSetter__(P, setter){
     $defineProperty.f(toObject(this), P, {set: aFunction(setter), enumerable: true, configurable: true});
   }
@@ -50037,7 +50103,7 @@ var $export                  = __webpack_require__(0)
   , getOwnPropertyDescriptor = __webpack_require__(19).f;
 
 // B.2.2.4 Object.prototype.__lookupGetter__(P)
-__webpack_require__(8) && $export($export.P + __webpack_require__(64), 'Object', {
+__webpack_require__(9) && $export($export.P + __webpack_require__(64), 'Object', {
   __lookupGetter__: function __lookupGetter__(P){
     var O = toObject(this)
       , K = toPrimitive(P, true)
@@ -50061,7 +50127,7 @@ var $export                  = __webpack_require__(0)
   , getOwnPropertyDescriptor = __webpack_require__(19).f;
 
 // B.2.2.5 Object.prototype.__lookupSetter__(P)
-__webpack_require__(8) && $export($export.P + __webpack_require__(64), 'Object', {
+__webpack_require__(9) && $export($export.P + __webpack_require__(64), 'Object', {
   __lookupSetter__: function __lookupSetter__(P){
     var O = toObject(this)
       , K = toPrimitive(P, true)
@@ -50901,30 +50967,36 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
 
 /***/ }),
 /* 497 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-module.exports = __webpack_require__.p + "./fonts/howlgray.svg";
+// removed by extract-text-webpack-plugin
 
 /***/ }),
 /* 498 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "./images/or7.jpg";
+module.exports = __webpack_require__.p + "./fonts/howlgray.svg";
 
 /***/ }),
 /* 499 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "./images/proposedwilderness.jpg";
+module.exports = __webpack_require__.p + "./images/or7.jpg";
 
 /***/ }),
 /* 500 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "./images/wildfires.jpg";
+module.exports = __webpack_require__.p + "./images/proposedwilderness.jpg";
 
 /***/ }),
 /* 501 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "./images/wildfires.jpg";
+
+/***/ }),
+/* 502 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -51169,7 +51241,7 @@ return utils;
 
 
 /***/ }),
-/* 502 */
+/* 503 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51183,17 +51255,17 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 },"useData":true});
 
 /***/ }),
-/* 503 */
+/* 504 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
 function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj); }
 module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
-    return "<div id=\"cesiumContainer\" class=\"col-xs-9 full-height no-gutter\">\n  <div class=\"leaflet-top leaflet-left\">\n    <div class=\"leaflet-bar leaflet-control\">\n      <a class=\"leaflet-control-zoom-in\" href=\"#\" title=\"Zoom in\">+</a>\n      <a class=\"leaflet-control-zoom-out\" href=\"#\" title=\"Zoom out\">-</a>\n    </div>\n    <div class=\"leaflet-control leaflet-bar\">\n      <a id=\"resetView\" href=\"#\" title=\"Reset view\"><span class=\"glyphicon glyphicon-refresh\" aria-hidden=\"true\"></span></a>\n    </div>\n    <div id=\"layerControl\" title=\"Basemaps &amp; overlays\" class=\"leaflet-control leaflet-control-layers\" aria-haspopup=\"true\">\n    </div>\n  </div>\n  <div id=\"infoPanelSliderButton\"><span class=\"glyphicon glyphicon-triangle-right\" aria-hidden=\"true\"></span></div>\n  <div id=\"infoBox\"></div>\n  <div id=\"viewLabel\" style=\"display: none\"></div>\n  <div id=\"loadingIndicator\" class=\"loadingIndicator\"></div>\n  <div id=\"featurePopUp\" class=\"leaflet-container\" style=\"display: none;\"></div>\n</div>\n<div id=\"infoPanel\" class=\"col-xs-3 full-height no-gutter\"></div>\n";
+    return "<div id=\"cesiumContainer\" class=\"col-xs-9 full-height no-gutter\">\n  <div class=\"leaflet-top leaflet-left\">\n    <div class=\"leaflet-bar leaflet-control\">\n      <a class=\"leaflet-control-zoom-in\" href=\"#\" title=\"Zoom in\">+</a>\n      <a class=\"leaflet-control-zoom-out\" href=\"#\" title=\"Zoom out\">-</a>\n    </div>\n    <div class=\"leaflet-control leaflet-bar\">\n      <a id=\"resetView\" href=\"#\" title=\"Reset view\"><span class=\"glyphicon glyphicon-refresh\" aria-hidden=\"true\"></span></a>\n    </div>\n    <div id=\"layerControl\" title=\"Basemaps &amp; overlays\" class=\"leaflet-control leaflet-control-layers\" aria-haspopup=\"true\">\n    </div>\n  </div>\n  <div class=\"leaflet-top leaflet-right\">\n    <div class=\"leaflet-control leaflet-bar\">\n      <a id=\"viewPhotosControl\" style=\"display: none\" href=\"#\" title=\"View photos\"><span class=\"glyphicon glyphicon-camera\" aria-hidden=\"true\"></span></a>\n      <div id=\"viewPhotosContainer\" style=\"display: none\"></div>\n    </div>\n  </div>\n  <div id=\"infoPanelSliderButton\"><span class=\"glyphicon glyphicon-triangle-right\" aria-hidden=\"true\"></span></div>\n  <div id=\"infoBox\"></div>\n  <div id=\"viewLabel\" style=\"display: none\"></div>\n  <div id=\"loadingIndicator\" class=\"loadingIndicator\"></div>\n  <div id=\"featurePopUp\" class=\"leaflet-container\" style=\"display: none;\"></div>\n</div>\n<div id=\"infoPanel\" class=\"col-xs-3 full-height no-gutter\"></div>\n";
 },"useData":true});
 
 /***/ }),
-/* 504 */
+/* 505 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51207,7 +51279,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 },"useData":true});
 
 /***/ }),
-/* 505 */
+/* 506 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51235,7 +51307,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 },"useData":true});
 
 /***/ }),
-/* 506 */
+/* 507 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51259,7 +51331,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 },"useData":true});
 
 /***/ }),
-/* 507 */
+/* 508 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51287,7 +51359,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 },"useData":true});
 
 /***/ }),
-/* 508 */
+/* 509 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51297,7 +51369,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 },"useData":true});
 
 /***/ }),
-/* 509 */
+/* 510 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51305,13 +51377,13 @@ function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj);
 module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1, helper;
 
-  return "<div class=\"container-fluid\">\n  <div class=\"row navbar-inverse\">\n    <div id=\"homeLogo\"><img id=\"homeLogoImage\" src=\"" + __webpack_require__(497) + "\"></img></div>\n  </div>\n  <div class=\"row\" style=\"background-color: #F0F0F0;\">\n    <div style=\"margin: 10px;\">\n      <h3>Highlighting Oregon's WildLands</h3>\n      <p style=\"font-size: 130%; font-weight: 300\">Oregon is a wonderful state. It is beautiful and it is wild. Mountains, ancient forests, clear waters and wildlife. But most of Oregon's incredible wildlands are not protected, and therefore are in serious danger of irreparable destruction. The purpose of this site is to raise awareness of Oregon's wildlands through selected 3D map-based 'spotlights.' This site will be updated and new 'spotlights' will be added over time, so be sure to check back every now and then to see what's going on.</p>\n    </div>\n  </div>\n  <div id=\"noWebGLMessage\" class=\"row\" style=\"display: none; font-size: 130%; background-color: #F0E68C;\">\n    <br>Unfortunately your browser does not support WebGL graphics. Therefore, the spotlights below are not available for viewing.\n    <br><br>\n  </div>\n  <div class=\"row spacer\"></div>\n  <div class=\"row\">\n    <h4>SPOTLIGHTS</h4>\n  </div>\n</div>\n<div class=\"container-fluid\" style=\"height: 90%; y-overflow: scroll;\">\n  <div class=\"row\">\n    <div class=\"grid\">\n      <div class=\"grid-sizer\"></div>\n      <div class=\"grid-item\">\n        <div class=\"panel panel-default\">\n          <a class=\"homeViewLinkItem\" view=\"wildfires\" href=\"#\">\n            <img class=\"img-responsive img-hover-effect\" style=\"padding: 5px;\" src=\"" + __webpack_require__(500) + "\" alt=\"\">\n          </a>\n          <div style=\"font-size: 70%; margin-top: -5px;\">Photo by the Oregon Department of Forestry</div>\n          <div class=\"panel-footer text-center\">\n            History of Wildfire Severity\n          </div>\n          <div class=\"panel-caption text-center\">\n            In the Pacific Northwest, fire is a natural part of healthy forests. Since 2004 the Federal Government has been conducting detailed wildfire severity assessments by analyzing before and after LANDSAT satellite images of fire boundaries. This 'spotlight' shows the history of wildfires in Oregon and their severity since 1984.\n          </div>\n        </div>\n      </div>\n      <div class=\"grid-item\">\n        <div class=\"panel panel-default\">\n          <a class=\"homeViewLinkItem\" view=\"ecopwilderness\" href=\"#\">\n            <img class=\"img-responsive img-hover-effect\" style=\"padding: 5px;\" src=\"" + __webpack_require__(499) + "\" alt=\"\">\n          </a>\n          <div style=\"font-size: 70%; margin-top: -5px;\">Photo by Wikipedia user Axcordion</div>\n          <div class=\"panel-footer text-center\">\n            Potential Wilderness Areas\n          </div>\n          <div class=\"panel-caption text-center\">\n            Did you know that Oregon has the least amount of proportional protected wilderness area as compared to California and Washington? 4% versus 15% and 10% respectively! Using this 'spotlight' you can explore potential wilderness areas that would raise Oregon to be on par with its neighbors.\n          </div>\n        </div>\n      </div>\n      <div class=\"grid-item\">\n        <div class=\"panel panel-default\">\n          <a class=\"homeViewLinkItem\" view=\"or7\" href=\"#\">\n            <img class=\"img-responsive img-hover-effect\" style=\"padding: 5px;\" src=\"" + __webpack_require__(498) + "\" alt=\"\">\n          </a>\n          <div style=\"font-size: 70%; margin-top: -5px;\">Photo by the Oregon Department of Fish and Wildlife</div>\n          <div class=\"panel-footer text-center\">\n            The Journey of OR-7\n          </div>\n          <div class=\"panel-caption text-center\">\n            In 2011 a wolf by the name of OR-7, Journey, decided to break away from its pack in Northeast Oregon and march over 1,000 miles all the way to California through wilderness and roadless areas looking for a mate to establish his own pack. OR-7 had a GPS collar, so his route has been thoroughly recorded. This 'spotlight' shows the incredible journey of OR-7.\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n  <div class=\"row spacer\"></div>\n  <div class=\"row navbar-inverse\" style=\"margin: 0 auto;\">\n    <div class=\"row spacer\"></div>\n    <h4 class=\"nav\" style=\"color: white;\">\n      <a href=\"#\" title=\"Share on Twitter\" class=\"home-button btn-twitter\">\n        <span class=\"fa-stack fa-lg\">\n          <i class=\"fa fa-circle-thin fa-stack-2x\"></i>\n          <i class=\"fa fa-twitter fa-stack-1x\"></i>\n        </span>\n      </a>\n      <a href=\"#\" title=\"Share on Facebook\" class=\"home-button btn-facebook\">\n        <span class=\"fa-stack fa-lg\">\n          <i class=\"fa fa-circle-thin fa-stack-2x\"></i>\n          <i class=\"fa fa-facebook fa-stack-1x\"></i>\n        </span>\n      </a>\n    </h4>\n    <br>\n    <small style=\"color: #9D9D9D;\"><a class=\"home-button\" target=\"_blank\" href=\"https://github.com/jimmyangel/howl\">HOWL "
+  return "<div class=\"container-fluid\">\n  <div class=\"row navbar-inverse\">\n    <div id=\"homeLogo\"><img id=\"homeLogoImage\" src=\"" + __webpack_require__(498) + "\"></img></div>\n  </div>\n  <div class=\"row\" style=\"background-color: #F0F0F0;\">\n    <div style=\"margin: 10px;\">\n      <h3>Highlighting Oregon's WildLands</h3>\n      <p style=\"font-size: 130%; font-weight: 300\">Oregon is a wonderful state. It is beautiful and it is wild. Mountains, ancient forests, clear waters and wildlife. But most of Oregon's incredible wildlands are not protected, and therefore are in serious danger of irreparable destruction. The purpose of this site is to raise awareness of Oregon's wildlands through selected 3D map-based 'spotlights.' This site will be updated and new 'spotlights' will be added over time, so be sure to check back every now and then to see what's going on.</p>\n    </div>\n  </div>\n  <div id=\"noWebGLMessage\" class=\"row\" style=\"display: none; font-size: 130%; background-color: #F0E68C;\">\n    <br>Unfortunately your browser does not support WebGL graphics. Therefore, the spotlights below are not available for viewing.\n    <br><br>\n  </div>\n  <div class=\"row spacer\"></div>\n  <div class=\"row\">\n    <h4>SPOTLIGHTS</h4>\n  </div>\n</div>\n<div class=\"container-fluid\" style=\"height: 90%; y-overflow: scroll;\">\n  <div class=\"row\">\n    <div class=\"grid\">\n      <div class=\"grid-sizer\"></div>\n      <div class=\"grid-item\">\n        <div class=\"panel panel-default\">\n          <a class=\"homeViewLinkItem\" view=\"wildfires\" href=\"#\">\n            <img class=\"img-responsive img-hover-effect\" style=\"padding: 5px;\" src=\"" + __webpack_require__(501) + "\" alt=\"\">\n          </a>\n          <div style=\"font-size: 70%; margin-top: -5px;\">Photo by the Oregon Department of Forestry</div>\n          <div class=\"panel-footer text-center\">\n            History of Wildfire Severity\n          </div>\n          <div class=\"panel-caption text-center\">\n            In the Pacific Northwest, fire is a natural part of healthy forests. Since 2004 the Federal Government has been conducting detailed wildfire severity assessments by analyzing before and after LANDSAT satellite images of fire boundaries. This 'spotlight' shows the history of wildfires in Oregon and their severity since 1984.\n          </div>\n        </div>\n      </div>\n      <div class=\"grid-item\">\n        <div class=\"panel panel-default\">\n          <a class=\"homeViewLinkItem\" view=\"ecopwilderness\" href=\"#\">\n            <img class=\"img-responsive img-hover-effect\" style=\"padding: 5px;\" src=\"" + __webpack_require__(500) + "\" alt=\"\">\n          </a>\n          <div style=\"font-size: 70%; margin-top: -5px;\">Photo by Wikipedia user Axcordion</div>\n          <div class=\"panel-footer text-center\">\n            Potential Wilderness Areas\n          </div>\n          <div class=\"panel-caption text-center\">\n            Did you know that Oregon has the least amount of proportional protected wilderness area as compared to California and Washington? 4% versus 15% and 10% respectively! Using this 'spotlight' you can explore potential wilderness areas that would raise Oregon to be on par with its neighbors.\n          </div>\n        </div>\n      </div>\n      <div class=\"grid-item\">\n        <div class=\"panel panel-default\">\n          <a class=\"homeViewLinkItem\" view=\"or7\" href=\"#\">\n            <img class=\"img-responsive img-hover-effect\" style=\"padding: 5px;\" src=\"" + __webpack_require__(499) + "\" alt=\"\">\n          </a>\n          <div style=\"font-size: 70%; margin-top: -5px;\">Photo by the Oregon Department of Fish and Wildlife</div>\n          <div class=\"panel-footer text-center\">\n            The Journey of OR-7\n          </div>\n          <div class=\"panel-caption text-center\">\n            In 2011 a wolf by the name of OR-7, Journey, decided to break away from its pack in Northeast Oregon and march over 1,000 miles all the way to California through wilderness and roadless areas looking for a mate to establish his own pack. OR-7 had a GPS collar, so his route has been thoroughly recorded. This 'spotlight' shows the incredible journey of OR-7.\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n  <div class=\"row spacer\"></div>\n  <div class=\"row navbar-inverse\" style=\"margin: 0 auto;\">\n    <div class=\"row spacer\"></div>\n    <h4 class=\"nav\" style=\"color: white;\">\n      <a href=\"#\" title=\"Share on Twitter\" class=\"home-button btn-twitter\">\n        <span class=\"fa-stack fa-lg\">\n          <i class=\"fa fa-circle-thin fa-stack-2x\"></i>\n          <i class=\"fa fa-twitter fa-stack-1x\"></i>\n        </span>\n      </a>\n      <a href=\"#\" title=\"Share on Facebook\" class=\"home-button btn-facebook\">\n        <span class=\"fa-stack fa-lg\">\n          <i class=\"fa fa-circle-thin fa-stack-2x\"></i>\n          <i class=\"fa fa-facebook fa-stack-1x\"></i>\n        </span>\n      </a>\n    </h4>\n    <br>\n    <small style=\"color: #9D9D9D;\"><a class=\"home-button\" target=\"_blank\" href=\"https://github.com/jimmyangel/howl\">HOWL "
     + ((stack1 = ((helper = (helper = helpers.version || (depth0 != null ? depth0.version : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : {},{"name":"version","hash":{},"data":data}) : helper))) != null ? stack1 : "")
-    + "</a> is an open source, open data project</small>\n  </div>\n</div>\n";
+    + "</a> - made for <a class=\"home-button\" target=\"_blank\" href=\"http://oregonwild.org/\">Oregon Wild</a></small>\n  </div>\n</div>\n";
 },"useData":true});
 
 /***/ }),
-/* 510 */
+/* 511 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51349,7 +51421,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 },"useData":true});
 
 /***/ }),
-/* 511 */
+/* 512 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51359,7 +51431,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 },"useData":true});
 
 /***/ }),
-/* 512 */
+/* 513 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51373,17 +51445,17 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 },"useData":true});
 
 /***/ }),
-/* 513 */
+/* 514 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
 function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj); }
 module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
-    return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><b>The Journey of OR-7</b></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Timeline playback</div>\n    <div class=\"legend-subtitle\">[Running @ <b><span id='secsperyear'>3</span></b> seconds per year]</div>\n    <div class=\"playback-controls\">\n      <div>\n        <div class=\"howl-control\">\n          <a id=\"pb-slower\" href=\"#\" title=\"Faster\"><img src=\"" + __webpack_require__(129) + "\"></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-start\" href=\"#\" title=\"Start\"><span class=\"glyphicon glyphicon-step-backward\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-play\" href=\"#\" title=\"Play/Pause\"><span class=\"glyphicon glyphicon-play\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-end\" href=\"#\" title=\"End\"><span class=\"glyphicon glyphicon-step-forward\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-faster\" href=\"#\" title=\"Faster\"><img src=\"" + __webpack_require__(128) + "\"></a>\n        </div>\n      </div>\n    </div>\n    <div class=\"legend-explanation\">Use buttons for playback control</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Wilderness Crossings</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style='background:#08ff00;'></span> Wilderness Area</li>\n          <li><span class=\"legend-item\" style='background:#d0ff00;'></span> Potential Wilderness Area</li>\n        </ul>\n      </div>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Hangout Areas</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style='background:#808000;'></span> Klamath Wander Area</li>\n          <li><span class=\"legend-item\" style='background:#996633;'></span> Oregon Residence Area</li>\n        </ul>\n      </div>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR7 Expedition Story Map</div>\n    <div class=\"legend-entry\"><span><input id=\"story-map-overlay\" type=\"checkbox\"></span> Display story map overlay</div>\n    <div style=\"margin: 4px;\"><input id=\"infoPanelTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Journey log</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <ul id=\"logEntries\" class=\"v-legend-items\">\n      </ul>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR-7 Information Links</div>\n    <div class=\"legend-entry\" style=\"text-align: center; margin-left: 4px;\">\n      <ul class=\"v-legend-items\">\n        <div class=\"hline\"></div>\n        <div>Oregon Wild</div>\n        <a href=\"http://www.oregonwild.org/wildlife/wolves/the-journey-of-or7\" target=\"_blank\">Don't Stop Believing: The Journey of OR-7</a><br>\n        <div class=\"hline\"></div>\n        <div>Oregon Department of Fish and Wildlife</div>\n        <a href=\"http://www.dfw.state.or.us/Wolves/index.asp\" target=\"_blank\">Wolves in Oregon</a><br>\n        <a href=\"https://www.flickr.com/photos/odfw/sets/72157623481759903/\" target=\"_blank\">Photos - Mammals: Canine; Wolves</a><br>\n        <a href=\"http://www.dfw.state.or.us/Wolves/Packs/Rogue.asp\" target=\"_blank\">Rogue Pack</a><br>\n        <div class=\"hline\"></div>\n        <div>California Department of Fish and Wildlife</div>\n        <a href=\"https://www.wildlife.ca.gov/Conservation/Mammals/Gray-Wolf/OR7-Story\" target=\"_blank\">OR-7 – A Lone Wolf's Story</a><br>\n        <div class=\"hline\"></div>\n        <div>Documentaries</div>\n        <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a><br>\n        <a href=\"https://www.or7themovie.com/\" target=\"_blank\">OR7 - The Journey</a>\n        <div class=\"hline\"></div>\n        <div>Books</div>\n        <a href=\"https://www.amazon.com/Journey-Amazing-7-Oregon-History/dp/1629013994\" target=\"_blank\">Journey: The Amazing Story of OR-7</a><br>\n        <a href=\"https://www.amazon.com/Journey-Based-True-Story-Famous/dp/1632170655\" target=\"_blank\">Journey: Based on the True Story of OR7</a>\n\n      </ul>\n    </div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Sources:\n    <a href=\"http://www.oregonwild.org/\" target=\"_blank\">Oregon Wild</a>,\n    <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a>\n  </div>\n</div>\n";
+    return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><b>The Journey of OR-7</b></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Timeline playback</div>\n    <div class=\"legend-subtitle\">[Running @ <b><span id='secsperyear'>3</span></b> seconds per year]</div>\n    <div class=\"playback-controls\">\n      <div>\n        <div class=\"howl-control\">\n          <a id=\"pb-slower\" href=\"#\" title=\"Faster\"><img src=\"" + __webpack_require__(129) + "\"></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-start\" href=\"#\" title=\"Start\"><span class=\"glyphicon glyphicon-step-backward\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-play\" href=\"#\" title=\"Play/Pause\"><span class=\"glyphicon glyphicon-play\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-end\" href=\"#\" title=\"End\"><span class=\"glyphicon glyphicon-step-forward\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-faster\" href=\"#\" title=\"Faster\"><img src=\"" + __webpack_require__(128) + "\"></a>\n        </div>\n      </div>\n    </div>\n    <div class=\"legend-explanation\">Use buttons for playback control</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Wilderness Crossings</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style='background:#08ff00;'></span> Wilderness Area</li>\n          <li><span class=\"legend-item\" style='background:#d0ff00;'></span> Potential Wilderness Area</li>\n        </ul>\n      </div>\n    </div>\n    <div style=\"margin: 4px;\"><input id=\"wildernessTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Hangout Areas</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style='background:#808000;'></span> Klamath Wander Area</li>\n          <li><span class=\"legend-item\" style='background:#996633;'></span> Oregon Residence Area</li>\n        </ul>\n      </div>\n    </div>\n    <div style=\"margin: 4px;\"><input id=\"hangoutTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR7 Expedition Story Map</div>\n    <div class=\"legend-entry\"><span><input id=\"story-map-overlay\" type=\"checkbox\"></span> Display story map overlay</div>\n    <div style=\"margin: 4px;\"><input id=\"storymapTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Journey log</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <ul id=\"logEntries\" class=\"v-legend-items\">\n      </ul>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR-7 Information Links</div>\n    <div class=\"legend-entry\" style=\"text-align: center; margin-left: 4px;\">\n      <ul class=\"v-legend-items\">\n        <div class=\"hline\"></div>\n        <div>Oregon Wild</div>\n        <a href=\"http://www.oregonwild.org/wildlife/wolves/the-journey-of-or7\" target=\"_blank\">Don't Stop Believing: The Journey of OR-7</a><br>\n        <div class=\"hline\"></div>\n        <div>Oregon Department of Fish and Wildlife</div>\n        <a href=\"http://www.dfw.state.or.us/Wolves/index.asp\" target=\"_blank\">Wolves in Oregon</a><br>\n        <a href=\"https://www.flickr.com/photos/odfw/sets/72157623481759903/\" target=\"_blank\">Photos - Mammals: Canine; Wolves</a><br>\n        <a href=\"http://www.dfw.state.or.us/Wolves/Packs/Rogue.asp\" target=\"_blank\">Rogue Pack</a><br>\n        <div class=\"hline\"></div>\n        <div>California Department of Fish and Wildlife</div>\n        <a href=\"https://www.wildlife.ca.gov/Conservation/Mammals/Gray-Wolf/OR7-Story\" target=\"_blank\">OR-7 – A Lone Wolf's Story</a><br>\n        <div class=\"hline\"></div>\n        <div>Documentaries</div>\n        <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a><br>\n        <a href=\"https://www.or7themovie.com/\" target=\"_blank\">OR7 - The Journey</a>\n        <div class=\"hline\"></div>\n        <div>Books</div>\n        <a href=\"https://www.amazon.com/Journey-Amazing-7-Oregon-History/dp/1629013994\" target=\"_blank\">Journey: The Amazing Story of OR-7</a><br>\n        <a href=\"https://www.amazon.com/Journey-Based-True-Story-Famous/dp/1632170655\" target=\"_blank\">Journey: Based on the True Story of OR7</a>\n\n      </ul>\n    </div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Sources:\n    <a href=\"http://www.oregonwild.org/\" target=\"_blank\">Oregon Wild</a>,\n    <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a>\n  </div>\n</div>\n";
 },"useData":true});
 
 /***/ }),
-/* 514 */
+/* 515 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51403,7 +51475,17 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 },"useData":true});
 
 /***/ }),
-/* 515 */
+/* 516 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Handlebars = __webpack_require__(7);
+function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj); }
+module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
+    return "<div class=\"or7-photos-gallery\">\n	<a id=\"or7FirstPhoto\" href=\"data/or7/or7photos/20140503.jpg\" title=\"OR-7 on May 3, 2014\" subtitle=\"U. S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/16674012963/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20140503a.jpg\" title=\"OR-7's mate (?) on May 3, 2014\" subtitle=\"U. S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/16674012853/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20140504.jpg\" title=\"OR-7's mate (?) on May 4, 2014\" subtitle=\"U. S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/17106489928/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20140602.jpg\" title=\"Two of OR-7’s pups on June 2, 2014\" subtitle=\"U.S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/17108051289/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20160608.jpg\" title=\"OR-7 on June 8, 2016\" subtitle=\"U.S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/28330683040/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20160712-1.jpg\" title=\"Rogue Pack Pups on July 12, 2016\" subtitle=\"U.S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/28536438391/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20160712-2.jpg\" title=\"Rogue Pack Pups on July 12, 2016\" subtitle=\"U.S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/27998141214/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20161023.jpg\" title=\"OR-7 on October 23, 2016\" subtitle=\"Oregon Department of Fish and Wildlife\" source=\"https://www.flickr.com/photos/odfw/30754760735/in/album-72157623481759903/\"></a>\n</div>\n";
+},"useData":true});
+
+/***/ }),
+/* 517 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51413,7 +51495,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 },"useData":true});
 
 /***/ }),
-/* 516 */
+/* 518 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51435,7 +51517,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 },"useData":true});
 
 /***/ }),
-/* 517 */
+/* 519 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51445,7 +51527,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 },"useData":true});
 
 /***/ }),
-/* 518 */
+/* 520 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51461,7 +51543,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 },"usePartial":true,"useData":true});
 
 /***/ }),
-/* 519 */
+/* 521 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51477,7 +51559,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 },"usePartial":true,"useData":true});
 
 /***/ }),
-/* 520 */
+/* 522 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51493,7 +51575,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 },"useData":true});
 
 /***/ }),
-/* 521 */
+/* 523 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51503,7 +51585,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 },"useData":true});
 
 /***/ }),
-/* 522 */
+/* 524 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Handlebars = __webpack_require__(7);
@@ -51513,7 +51595,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 },"useData":true});
 
 /***/ }),
-/* 523 */
+/* 525 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -51535,7 +51617,7 @@ var base = _interopRequireWildcard(_handlebarsBase);
 // Each of these augment the Handlebars object. No need to setup here.
 // (This is done to easily share code between commonjs and browse envs)
 
-var _handlebarsSafeString = __webpack_require__(537);
+var _handlebarsSafeString = __webpack_require__(539);
 
 var _handlebarsSafeString2 = _interopRequireDefault(_handlebarsSafeString);
 
@@ -51547,11 +51629,11 @@ var _handlebarsUtils = __webpack_require__(31);
 
 var Utils = _interopRequireWildcard(_handlebarsUtils);
 
-var _handlebarsRuntime = __webpack_require__(536);
+var _handlebarsRuntime = __webpack_require__(538);
 
 var runtime = _interopRequireWildcard(_handlebarsRuntime);
 
-var _handlebarsNoConflict = __webpack_require__(535);
+var _handlebarsNoConflict = __webpack_require__(537);
 
 var _handlebarsNoConflict2 = _interopRequireDefault(_handlebarsNoConflict);
 
@@ -51586,7 +51668,7 @@ module.exports = exports['default'];
 
 
 /***/ }),
-/* 524 */
+/* 526 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -51598,7 +51680,7 @@ exports.registerDefaultDecorators = registerDefaultDecorators;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _decoratorsInline = __webpack_require__(525);
+var _decoratorsInline = __webpack_require__(527);
 
 var _decoratorsInline2 = _interopRequireDefault(_decoratorsInline);
 
@@ -51609,7 +51691,7 @@ function registerDefaultDecorators(instance) {
 
 
 /***/ }),
-/* 525 */
+/* 527 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -51645,7 +51727,7 @@ module.exports = exports['default'];
 
 
 /***/ }),
-/* 526 */
+/* 528 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -51657,31 +51739,31 @@ exports.registerDefaultHelpers = registerDefaultHelpers;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _helpersBlockHelperMissing = __webpack_require__(527);
+var _helpersBlockHelperMissing = __webpack_require__(529);
 
 var _helpersBlockHelperMissing2 = _interopRequireDefault(_helpersBlockHelperMissing);
 
-var _helpersEach = __webpack_require__(528);
+var _helpersEach = __webpack_require__(530);
 
 var _helpersEach2 = _interopRequireDefault(_helpersEach);
 
-var _helpersHelperMissing = __webpack_require__(529);
+var _helpersHelperMissing = __webpack_require__(531);
 
 var _helpersHelperMissing2 = _interopRequireDefault(_helpersHelperMissing);
 
-var _helpersIf = __webpack_require__(530);
+var _helpersIf = __webpack_require__(532);
 
 var _helpersIf2 = _interopRequireDefault(_helpersIf);
 
-var _helpersLog = __webpack_require__(531);
+var _helpersLog = __webpack_require__(533);
 
 var _helpersLog2 = _interopRequireDefault(_helpersLog);
 
-var _helpersLookup = __webpack_require__(532);
+var _helpersLookup = __webpack_require__(534);
 
 var _helpersLookup2 = _interopRequireDefault(_helpersLookup);
 
-var _helpersWith = __webpack_require__(533);
+var _helpersWith = __webpack_require__(535);
 
 var _helpersWith2 = _interopRequireDefault(_helpersWith);
 
@@ -51698,7 +51780,7 @@ function registerDefaultHelpers(instance) {
 
 
 /***/ }),
-/* 527 */
+/* 529 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -51744,7 +51826,7 @@ module.exports = exports['default'];
 
 
 /***/ }),
-/* 528 */
+/* 530 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -51845,7 +51927,7 @@ module.exports = exports['default'];
 
 
 /***/ }),
-/* 529 */
+/* 531 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -51877,7 +51959,7 @@ module.exports = exports['default'];
 
 
 /***/ }),
-/* 530 */
+/* 532 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -51913,7 +51995,7 @@ module.exports = exports['default'];
 
 
 /***/ }),
-/* 531 */
+/* 533 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -51946,7 +52028,7 @@ module.exports = exports['default'];
 
 
 /***/ }),
-/* 532 */
+/* 534 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -51965,7 +52047,7 @@ module.exports = exports['default'];
 
 
 /***/ }),
-/* 533 */
+/* 535 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -52005,7 +52087,7 @@ module.exports = exports['default'];
 
 
 /***/ }),
-/* 534 */
+/* 536 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -52059,7 +52141,7 @@ module.exports = exports['default'];
 
 
 /***/ }),
-/* 535 */
+/* 537 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -52087,7 +52169,7 @@ module.exports = exports['default'];
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(97)))
 
 /***/ }),
-/* 536 */
+/* 538 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -52391,7 +52473,7 @@ function executeDecorators(fn, prog, container, depths, data, blockParams) {
 
 
 /***/ }),
-/* 537 */
+/* 539 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -52413,7 +52495,7 @@ module.exports = exports['default'];
 
 
 /***/ }),
-/* 538 */
+/* 540 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -52790,7 +52872,19 @@ return ImagesLoaded;
 
 
 /***/ }),
-/* 539 */
+/* 541 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! Magnific Popup - v1.1.0 - 2016-02-20
+* http://dimsemenov.com/plugins/magnific-popup/
+* Copyright (c) 2016 Dmitry Semenov; */
+!function(a){ true?!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8)], __WEBPACK_AMD_DEFINE_FACTORY__ = (a),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)):a("object"==typeof exports?require("jquery"):window.jQuery||window.Zepto)}(function(a){var b,c,d,e,f,g,h="Close",i="BeforeClose",j="AfterClose",k="BeforeAppend",l="MarkupParse",m="Open",n="Change",o="mfp",p="."+o,q="mfp-ready",r="mfp-removing",s="mfp-prevent-close",t=function(){},u=!!window.jQuery,v=a(window),w=function(a,c){b.ev.on(o+a+p,c)},x=function(b,c,d,e){var f=document.createElement("div");return f.className="mfp-"+b,d&&(f.innerHTML=d),e?c&&c.appendChild(f):(f=a(f),c&&f.appendTo(c)),f},y=function(c,d){b.ev.triggerHandler(o+c,d),b.st.callbacks&&(c=c.charAt(0).toLowerCase()+c.slice(1),b.st.callbacks[c]&&b.st.callbacks[c].apply(b,a.isArray(d)?d:[d]))},z=function(c){return c===g&&b.currTemplate.closeBtn||(b.currTemplate.closeBtn=a(b.st.closeMarkup.replace("%title%",b.st.tClose)),g=c),b.currTemplate.closeBtn},A=function(){a.magnificPopup.instance||(b=new t,b.init(),a.magnificPopup.instance=b)},B=function(){var a=document.createElement("p").style,b=["ms","O","Moz","Webkit"];if(void 0!==a.transition)return!0;for(;b.length;)if(b.pop()+"Transition"in a)return!0;return!1};t.prototype={constructor:t,init:function(){var c=navigator.appVersion;b.isLowIE=b.isIE8=document.all&&!document.addEventListener,b.isAndroid=/android/gi.test(c),b.isIOS=/iphone|ipad|ipod/gi.test(c),b.supportsTransition=B(),b.probablyMobile=b.isAndroid||b.isIOS||/(Opera Mini)|Kindle|webOS|BlackBerry|(Opera Mobi)|(Windows Phone)|IEMobile/i.test(navigator.userAgent),d=a(document),b.popupsCache={}},open:function(c){var e;if(c.isObj===!1){b.items=c.items.toArray(),b.index=0;var g,h=c.items;for(e=0;e<h.length;e++)if(g=h[e],g.parsed&&(g=g.el[0]),g===c.el[0]){b.index=e;break}}else b.items=a.isArray(c.items)?c.items:[c.items],b.index=c.index||0;if(b.isOpen)return void b.updateItemHTML();b.types=[],f="",c.mainEl&&c.mainEl.length?b.ev=c.mainEl.eq(0):b.ev=d,c.key?(b.popupsCache[c.key]||(b.popupsCache[c.key]={}),b.currTemplate=b.popupsCache[c.key]):b.currTemplate={},b.st=a.extend(!0,{},a.magnificPopup.defaults,c),b.fixedContentPos="auto"===b.st.fixedContentPos?!b.probablyMobile:b.st.fixedContentPos,b.st.modal&&(b.st.closeOnContentClick=!1,b.st.closeOnBgClick=!1,b.st.showCloseBtn=!1,b.st.enableEscapeKey=!1),b.bgOverlay||(b.bgOverlay=x("bg").on("click"+p,function(){b.close()}),b.wrap=x("wrap").attr("tabindex",-1).on("click"+p,function(a){b._checkIfClose(a.target)&&b.close()}),b.container=x("container",b.wrap)),b.contentContainer=x("content"),b.st.preloader&&(b.preloader=x("preloader",b.container,b.st.tLoading));var i=a.magnificPopup.modules;for(e=0;e<i.length;e++){var j=i[e];j=j.charAt(0).toUpperCase()+j.slice(1),b["init"+j].call(b)}y("BeforeOpen"),b.st.showCloseBtn&&(b.st.closeBtnInside?(w(l,function(a,b,c,d){c.close_replaceWith=z(d.type)}),f+=" mfp-close-btn-in"):b.wrap.append(z())),b.st.alignTop&&(f+=" mfp-align-top"),b.fixedContentPos?b.wrap.css({overflow:b.st.overflowY,overflowX:"hidden",overflowY:b.st.overflowY}):b.wrap.css({top:v.scrollTop(),position:"absolute"}),(b.st.fixedBgPos===!1||"auto"===b.st.fixedBgPos&&!b.fixedContentPos)&&b.bgOverlay.css({height:d.height(),position:"absolute"}),b.st.enableEscapeKey&&d.on("keyup"+p,function(a){27===a.keyCode&&b.close()}),v.on("resize"+p,function(){b.updateSize()}),b.st.closeOnContentClick||(f+=" mfp-auto-cursor"),f&&b.wrap.addClass(f);var k=b.wH=v.height(),n={};if(b.fixedContentPos&&b._hasScrollBar(k)){var o=b._getScrollbarSize();o&&(n.marginRight=o)}b.fixedContentPos&&(b.isIE7?a("body, html").css("overflow","hidden"):n.overflow="hidden");var r=b.st.mainClass;return b.isIE7&&(r+=" mfp-ie7"),r&&b._addClassToMFP(r),b.updateItemHTML(),y("BuildControls"),a("html").css(n),b.bgOverlay.add(b.wrap).prependTo(b.st.prependTo||a(document.body)),b._lastFocusedEl=document.activeElement,setTimeout(function(){b.content?(b._addClassToMFP(q),b._setFocus()):b.bgOverlay.addClass(q),d.on("focusin"+p,b._onFocusIn)},16),b.isOpen=!0,b.updateSize(k),y(m),c},close:function(){b.isOpen&&(y(i),b.isOpen=!1,b.st.removalDelay&&!b.isLowIE&&b.supportsTransition?(b._addClassToMFP(r),setTimeout(function(){b._close()},b.st.removalDelay)):b._close())},_close:function(){y(h);var c=r+" "+q+" ";if(b.bgOverlay.detach(),b.wrap.detach(),b.container.empty(),b.st.mainClass&&(c+=b.st.mainClass+" "),b._removeClassFromMFP(c),b.fixedContentPos){var e={marginRight:""};b.isIE7?a("body, html").css("overflow",""):e.overflow="",a("html").css(e)}d.off("keyup"+p+" focusin"+p),b.ev.off(p),b.wrap.attr("class","mfp-wrap").removeAttr("style"),b.bgOverlay.attr("class","mfp-bg"),b.container.attr("class","mfp-container"),!b.st.showCloseBtn||b.st.closeBtnInside&&b.currTemplate[b.currItem.type]!==!0||b.currTemplate.closeBtn&&b.currTemplate.closeBtn.detach(),b.st.autoFocusLast&&b._lastFocusedEl&&a(b._lastFocusedEl).focus(),b.currItem=null,b.content=null,b.currTemplate=null,b.prevHeight=0,y(j)},updateSize:function(a){if(b.isIOS){var c=document.documentElement.clientWidth/window.innerWidth,d=window.innerHeight*c;b.wrap.css("height",d),b.wH=d}else b.wH=a||v.height();b.fixedContentPos||b.wrap.css("height",b.wH),y("Resize")},updateItemHTML:function(){var c=b.items[b.index];b.contentContainer.detach(),b.content&&b.content.detach(),c.parsed||(c=b.parseEl(b.index));var d=c.type;if(y("BeforeChange",[b.currItem?b.currItem.type:"",d]),b.currItem=c,!b.currTemplate[d]){var f=b.st[d]?b.st[d].markup:!1;y("FirstMarkupParse",f),f?b.currTemplate[d]=a(f):b.currTemplate[d]=!0}e&&e!==c.type&&b.container.removeClass("mfp-"+e+"-holder");var g=b["get"+d.charAt(0).toUpperCase()+d.slice(1)](c,b.currTemplate[d]);b.appendContent(g,d),c.preloaded=!0,y(n,c),e=c.type,b.container.prepend(b.contentContainer),y("AfterChange")},appendContent:function(a,c){b.content=a,a?b.st.showCloseBtn&&b.st.closeBtnInside&&b.currTemplate[c]===!0?b.content.find(".mfp-close").length||b.content.append(z()):b.content=a:b.content="",y(k),b.container.addClass("mfp-"+c+"-holder"),b.contentContainer.append(b.content)},parseEl:function(c){var d,e=b.items[c];if(e.tagName?e={el:a(e)}:(d=e.type,e={data:e,src:e.src}),e.el){for(var f=b.types,g=0;g<f.length;g++)if(e.el.hasClass("mfp-"+f[g])){d=f[g];break}e.src=e.el.attr("data-mfp-src"),e.src||(e.src=e.el.attr("href"))}return e.type=d||b.st.type||"inline",e.index=c,e.parsed=!0,b.items[c]=e,y("ElementParse",e),b.items[c]},addGroup:function(a,c){var d=function(d){d.mfpEl=this,b._openClick(d,a,c)};c||(c={});var e="click.magnificPopup";c.mainEl=a,c.items?(c.isObj=!0,a.off(e).on(e,d)):(c.isObj=!1,c.delegate?a.off(e).on(e,c.delegate,d):(c.items=a,a.off(e).on(e,d)))},_openClick:function(c,d,e){var f=void 0!==e.midClick?e.midClick:a.magnificPopup.defaults.midClick;if(f||!(2===c.which||c.ctrlKey||c.metaKey||c.altKey||c.shiftKey)){var g=void 0!==e.disableOn?e.disableOn:a.magnificPopup.defaults.disableOn;if(g)if(a.isFunction(g)){if(!g.call(b))return!0}else if(v.width()<g)return!0;c.type&&(c.preventDefault(),b.isOpen&&c.stopPropagation()),e.el=a(c.mfpEl),e.delegate&&(e.items=d.find(e.delegate)),b.open(e)}},updateStatus:function(a,d){if(b.preloader){c!==a&&b.container.removeClass("mfp-s-"+c),d||"loading"!==a||(d=b.st.tLoading);var e={status:a,text:d};y("UpdateStatus",e),a=e.status,d=e.text,b.preloader.html(d),b.preloader.find("a").on("click",function(a){a.stopImmediatePropagation()}),b.container.addClass("mfp-s-"+a),c=a}},_checkIfClose:function(c){if(!a(c).hasClass(s)){var d=b.st.closeOnContentClick,e=b.st.closeOnBgClick;if(d&&e)return!0;if(!b.content||a(c).hasClass("mfp-close")||b.preloader&&c===b.preloader[0])return!0;if(c===b.content[0]||a.contains(b.content[0],c)){if(d)return!0}else if(e&&a.contains(document,c))return!0;return!1}},_addClassToMFP:function(a){b.bgOverlay.addClass(a),b.wrap.addClass(a)},_removeClassFromMFP:function(a){this.bgOverlay.removeClass(a),b.wrap.removeClass(a)},_hasScrollBar:function(a){return(b.isIE7?d.height():document.body.scrollHeight)>(a||v.height())},_setFocus:function(){(b.st.focus?b.content.find(b.st.focus).eq(0):b.wrap).focus()},_onFocusIn:function(c){return c.target===b.wrap[0]||a.contains(b.wrap[0],c.target)?void 0:(b._setFocus(),!1)},_parseMarkup:function(b,c,d){var e;d.data&&(c=a.extend(d.data,c)),y(l,[b,c,d]),a.each(c,function(c,d){if(void 0===d||d===!1)return!0;if(e=c.split("_"),e.length>1){var f=b.find(p+"-"+e[0]);if(f.length>0){var g=e[1];"replaceWith"===g?f[0]!==d[0]&&f.replaceWith(d):"img"===g?f.is("img")?f.attr("src",d):f.replaceWith(a("<img>").attr("src",d).attr("class",f.attr("class"))):f.attr(e[1],d)}}else b.find(p+"-"+c).html(d)})},_getScrollbarSize:function(){if(void 0===b.scrollbarSize){var a=document.createElement("div");a.style.cssText="width: 99px; height: 99px; overflow: scroll; position: absolute; top: -9999px;",document.body.appendChild(a),b.scrollbarSize=a.offsetWidth-a.clientWidth,document.body.removeChild(a)}return b.scrollbarSize}},a.magnificPopup={instance:null,proto:t.prototype,modules:[],open:function(b,c){return A(),b=b?a.extend(!0,{},b):{},b.isObj=!0,b.index=c||0,this.instance.open(b)},close:function(){return a.magnificPopup.instance&&a.magnificPopup.instance.close()},registerModule:function(b,c){c.options&&(a.magnificPopup.defaults[b]=c.options),a.extend(this.proto,c.proto),this.modules.push(b)},defaults:{disableOn:0,key:null,midClick:!1,mainClass:"",preloader:!0,focus:"",closeOnContentClick:!1,closeOnBgClick:!0,closeBtnInside:!0,showCloseBtn:!0,enableEscapeKey:!0,modal:!1,alignTop:!1,removalDelay:0,prependTo:null,fixedContentPos:"auto",fixedBgPos:"auto",overflowY:"auto",closeMarkup:'<button title="%title%" type="button" class="mfp-close">&#215;</button>',tClose:"Close (Esc)",tLoading:"Loading...",autoFocusLast:!0}},a.fn.magnificPopup=function(c){A();var d=a(this);if("string"==typeof c)if("open"===c){var e,f=u?d.data("magnificPopup"):d[0].magnificPopup,g=parseInt(arguments[1],10)||0;f.items?e=f.items[g]:(e=d,f.delegate&&(e=e.find(f.delegate)),e=e.eq(g)),b._openClick({mfpEl:e},d,f)}else b.isOpen&&b[c].apply(b,Array.prototype.slice.call(arguments,1));else c=a.extend(!0,{},c),u?d.data("magnificPopup",c):d[0].magnificPopup=c,b.addGroup(d,c);return d};var C,D,E,F="inline",G=function(){E&&(D.after(E.addClass(C)).detach(),E=null)};a.magnificPopup.registerModule(F,{options:{hiddenClass:"hide",markup:"",tNotFound:"Content not found"},proto:{initInline:function(){b.types.push(F),w(h+"."+F,function(){G()})},getInline:function(c,d){if(G(),c.src){var e=b.st.inline,f=a(c.src);if(f.length){var g=f[0].parentNode;g&&g.tagName&&(D||(C=e.hiddenClass,D=x(C),C="mfp-"+C),E=f.after(D).detach().removeClass(C)),b.updateStatus("ready")}else b.updateStatus("error",e.tNotFound),f=a("<div>");return c.inlineElement=f,f}return b.updateStatus("ready"),b._parseMarkup(d,{},c),d}}});var H,I="ajax",J=function(){H&&a(document.body).removeClass(H)},K=function(){J(),b.req&&b.req.abort()};a.magnificPopup.registerModule(I,{options:{settings:null,cursor:"mfp-ajax-cur",tError:'<a href="%url%">The content</a> could not be loaded.'},proto:{initAjax:function(){b.types.push(I),H=b.st.ajax.cursor,w(h+"."+I,K),w("BeforeChange."+I,K)},getAjax:function(c){H&&a(document.body).addClass(H),b.updateStatus("loading");var d=a.extend({url:c.src,success:function(d,e,f){var g={data:d,xhr:f};y("ParseAjax",g),b.appendContent(a(g.data),I),c.finished=!0,J(),b._setFocus(),setTimeout(function(){b.wrap.addClass(q)},16),b.updateStatus("ready"),y("AjaxContentAdded")},error:function(){J(),c.finished=c.loadError=!0,b.updateStatus("error",b.st.ajax.tError.replace("%url%",c.src))}},b.st.ajax.settings);return b.req=a.ajax(d),""}}});var L,M=function(c){if(c.data&&void 0!==c.data.title)return c.data.title;var d=b.st.image.titleSrc;if(d){if(a.isFunction(d))return d.call(b,c);if(c.el)return c.el.attr(d)||""}return""};a.magnificPopup.registerModule("image",{options:{markup:'<div class="mfp-figure"><div class="mfp-close"></div><figure><div class="mfp-img"></div><figcaption><div class="mfp-bottom-bar"><div class="mfp-title"></div><div class="mfp-counter"></div></div></figcaption></figure></div>',cursor:"mfp-zoom-out-cur",titleSrc:"title",verticalFit:!0,tError:'<a href="%url%">The image</a> could not be loaded.'},proto:{initImage:function(){var c=b.st.image,d=".image";b.types.push("image"),w(m+d,function(){"image"===b.currItem.type&&c.cursor&&a(document.body).addClass(c.cursor)}),w(h+d,function(){c.cursor&&a(document.body).removeClass(c.cursor),v.off("resize"+p)}),w("Resize"+d,b.resizeImage),b.isLowIE&&w("AfterChange",b.resizeImage)},resizeImage:function(){var a=b.currItem;if(a&&a.img&&b.st.image.verticalFit){var c=0;b.isLowIE&&(c=parseInt(a.img.css("padding-top"),10)+parseInt(a.img.css("padding-bottom"),10)),a.img.css("max-height",b.wH-c)}},_onImageHasSize:function(a){a.img&&(a.hasSize=!0,L&&clearInterval(L),a.isCheckingImgSize=!1,y("ImageHasSize",a),a.imgHidden&&(b.content&&b.content.removeClass("mfp-loading"),a.imgHidden=!1))},findImageSize:function(a){var c=0,d=a.img[0],e=function(f){L&&clearInterval(L),L=setInterval(function(){return d.naturalWidth>0?void b._onImageHasSize(a):(c>200&&clearInterval(L),c++,void(3===c?e(10):40===c?e(50):100===c&&e(500)))},f)};e(1)},getImage:function(c,d){var e=0,f=function(){c&&(c.img[0].complete?(c.img.off(".mfploader"),c===b.currItem&&(b._onImageHasSize(c),b.updateStatus("ready")),c.hasSize=!0,c.loaded=!0,y("ImageLoadComplete")):(e++,200>e?setTimeout(f,100):g()))},g=function(){c&&(c.img.off(".mfploader"),c===b.currItem&&(b._onImageHasSize(c),b.updateStatus("error",h.tError.replace("%url%",c.src))),c.hasSize=!0,c.loaded=!0,c.loadError=!0)},h=b.st.image,i=d.find(".mfp-img");if(i.length){var j=document.createElement("img");j.className="mfp-img",c.el&&c.el.find("img").length&&(j.alt=c.el.find("img").attr("alt")),c.img=a(j).on("load.mfploader",f).on("error.mfploader",g),j.src=c.src,i.is("img")&&(c.img=c.img.clone()),j=c.img[0],j.naturalWidth>0?c.hasSize=!0:j.width||(c.hasSize=!1)}return b._parseMarkup(d,{title:M(c),img_replaceWith:c.img},c),b.resizeImage(),c.hasSize?(L&&clearInterval(L),c.loadError?(d.addClass("mfp-loading"),b.updateStatus("error",h.tError.replace("%url%",c.src))):(d.removeClass("mfp-loading"),b.updateStatus("ready")),d):(b.updateStatus("loading"),c.loading=!0,c.hasSize||(c.imgHidden=!0,d.addClass("mfp-loading"),b.findImageSize(c)),d)}}});var N,O=function(){return void 0===N&&(N=void 0!==document.createElement("p").style.MozTransform),N};a.magnificPopup.registerModule("zoom",{options:{enabled:!1,easing:"ease-in-out",duration:300,opener:function(a){return a.is("img")?a:a.find("img")}},proto:{initZoom:function(){var a,c=b.st.zoom,d=".zoom";if(c.enabled&&b.supportsTransition){var e,f,g=c.duration,j=function(a){var b=a.clone().removeAttr("style").removeAttr("class").addClass("mfp-animated-image"),d="all "+c.duration/1e3+"s "+c.easing,e={position:"fixed",zIndex:9999,left:0,top:0,"-webkit-backface-visibility":"hidden"},f="transition";return e["-webkit-"+f]=e["-moz-"+f]=e["-o-"+f]=e[f]=d,b.css(e),b},k=function(){b.content.css("visibility","visible")};w("BuildControls"+d,function(){if(b._allowZoom()){if(clearTimeout(e),b.content.css("visibility","hidden"),a=b._getItemToZoom(),!a)return void k();f=j(a),f.css(b._getOffset()),b.wrap.append(f),e=setTimeout(function(){f.css(b._getOffset(!0)),e=setTimeout(function(){k(),setTimeout(function(){f.remove(),a=f=null,y("ZoomAnimationEnded")},16)},g)},16)}}),w(i+d,function(){if(b._allowZoom()){if(clearTimeout(e),b.st.removalDelay=g,!a){if(a=b._getItemToZoom(),!a)return;f=j(a)}f.css(b._getOffset(!0)),b.wrap.append(f),b.content.css("visibility","hidden"),setTimeout(function(){f.css(b._getOffset())},16)}}),w(h+d,function(){b._allowZoom()&&(k(),f&&f.remove(),a=null)})}},_allowZoom:function(){return"image"===b.currItem.type},_getItemToZoom:function(){return b.currItem.hasSize?b.currItem.img:!1},_getOffset:function(c){var d;d=c?b.currItem.img:b.st.zoom.opener(b.currItem.el||b.currItem);var e=d.offset(),f=parseInt(d.css("padding-top"),10),g=parseInt(d.css("padding-bottom"),10);e.top-=a(window).scrollTop()-f;var h={width:d.width(),height:(u?d.innerHeight():d[0].offsetHeight)-g-f};return O()?h["-moz-transform"]=h.transform="translate("+e.left+"px,"+e.top+"px)":(h.left=e.left,h.top=e.top),h}}});var P="iframe",Q="//about:blank",R=function(a){if(b.currTemplate[P]){var c=b.currTemplate[P].find("iframe");c.length&&(a||(c[0].src=Q),b.isIE8&&c.css("display",a?"block":"none"))}};a.magnificPopup.registerModule(P,{options:{markup:'<div class="mfp-iframe-scaler"><div class="mfp-close"></div><iframe class="mfp-iframe" src="//about:blank" frameborder="0" allowfullscreen></iframe></div>',srcAction:"iframe_src",patterns:{youtube:{index:"youtube.com",id:"v=",src:"//www.youtube.com/embed/%id%?autoplay=1"},vimeo:{index:"vimeo.com/",id:"/",src:"//player.vimeo.com/video/%id%?autoplay=1"},gmaps:{index:"//maps.google.",src:"%id%&output=embed"}}},proto:{initIframe:function(){b.types.push(P),w("BeforeChange",function(a,b,c){b!==c&&(b===P?R():c===P&&R(!0))}),w(h+"."+P,function(){R()})},getIframe:function(c,d){var e=c.src,f=b.st.iframe;a.each(f.patterns,function(){return e.indexOf(this.index)>-1?(this.id&&(e="string"==typeof this.id?e.substr(e.lastIndexOf(this.id)+this.id.length,e.length):this.id.call(this,e)),e=this.src.replace("%id%",e),!1):void 0});var g={};return f.srcAction&&(g[f.srcAction]=e),b._parseMarkup(d,g,c),b.updateStatus("ready"),d}}});var S=function(a){var c=b.items.length;return a>c-1?a-c:0>a?c+a:a},T=function(a,b,c){return a.replace(/%curr%/gi,b+1).replace(/%total%/gi,c)};a.magnificPopup.registerModule("gallery",{options:{enabled:!1,arrowMarkup:'<button title="%title%" type="button" class="mfp-arrow mfp-arrow-%dir%"></button>',preload:[0,2],navigateByImgClick:!0,arrows:!0,tPrev:"Previous (Left arrow key)",tNext:"Next (Right arrow key)",tCounter:"%curr% of %total%"},proto:{initGallery:function(){var c=b.st.gallery,e=".mfp-gallery";return b.direction=!0,c&&c.enabled?(f+=" mfp-gallery",w(m+e,function(){c.navigateByImgClick&&b.wrap.on("click"+e,".mfp-img",function(){return b.items.length>1?(b.next(),!1):void 0}),d.on("keydown"+e,function(a){37===a.keyCode?b.prev():39===a.keyCode&&b.next()})}),w("UpdateStatus"+e,function(a,c){c.text&&(c.text=T(c.text,b.currItem.index,b.items.length))}),w(l+e,function(a,d,e,f){var g=b.items.length;e.counter=g>1?T(c.tCounter,f.index,g):""}),w("BuildControls"+e,function(){if(b.items.length>1&&c.arrows&&!b.arrowLeft){var d=c.arrowMarkup,e=b.arrowLeft=a(d.replace(/%title%/gi,c.tPrev).replace(/%dir%/gi,"left")).addClass(s),f=b.arrowRight=a(d.replace(/%title%/gi,c.tNext).replace(/%dir%/gi,"right")).addClass(s);e.click(function(){b.prev()}),f.click(function(){b.next()}),b.container.append(e.add(f))}}),w(n+e,function(){b._preloadTimeout&&clearTimeout(b._preloadTimeout),b._preloadTimeout=setTimeout(function(){b.preloadNearbyImages(),b._preloadTimeout=null},16)}),void w(h+e,function(){d.off(e),b.wrap.off("click"+e),b.arrowRight=b.arrowLeft=null})):!1},next:function(){b.direction=!0,b.index=S(b.index+1),b.updateItemHTML()},prev:function(){b.direction=!1,b.index=S(b.index-1),b.updateItemHTML()},goTo:function(a){b.direction=a>=b.index,b.index=a,b.updateItemHTML()},preloadNearbyImages:function(){var a,c=b.st.gallery.preload,d=Math.min(c[0],b.items.length),e=Math.min(c[1],b.items.length);for(a=1;a<=(b.direction?e:d);a++)b._preloadItem(b.index+a);for(a=1;a<=(b.direction?d:e);a++)b._preloadItem(b.index-a)},_preloadItem:function(c){if(c=S(c),!b.items[c].preloaded){var d=b.items[c];d.parsed||(d=b.parseEl(c)),y("LazyLoad",d),"image"===d.type&&(d.img=a('<img class="mfp-img" />').on("load.mfploader",function(){d.hasSize=!0}).on("error.mfploader",function(){d.hasSize=!0,d.loadError=!0,y("LazyLoadError",d)}).attr("src",d.src)),d.preloaded=!0}}}});var U="retina";a.magnificPopup.registerModule(U,{options:{replaceSrc:function(a){return a.src.replace(/\.\w+$/,function(a){return"@2x"+a})},ratio:1},proto:{initRetina:function(){if(window.devicePixelRatio>1){var a=b.st.retina,c=a.ratio;c=isNaN(c)?c():c,c>1&&(w("ImageHasSize."+U,function(a,b){b.img.css({"max-width":b.img[0].naturalWidth/c,width:"100%"})}),w("ElementParse."+U,function(b,d){d.src=a.replaceSrc(d,c)}))}}}}),A()});
+
+/***/ }),
+/* 542 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -52807,7 +52901,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
   if ( true ) {
     // AMD
     !(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-        __webpack_require__(542),
+        __webpack_require__(545),
         __webpack_require__(96)
       ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
@@ -53037,7 +53131,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 
 /***/ }),
-/* 540 */
+/* 543 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
@@ -53286,10 +53380,10 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 540;
+webpackContext.id = 543;
 
 /***/ }),
-/* 541 */
+/* 544 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -53849,7 +53943,7 @@ return Item;
 
 
 /***/ }),
-/* 542 */
+/* 545 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -53867,8 +53961,8 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
     !(__WEBPACK_AMD_DEFINE_ARRAY__ = [
         __webpack_require__(95),
         __webpack_require__(96),
-        __webpack_require__(501),
-        __webpack_require__(541)
+        __webpack_require__(502),
+        __webpack_require__(544)
       ], __WEBPACK_AMD_DEFINE_RESULT__ = function( EvEmitter, getSize, utils, Item ) {
         return factory( window, EvEmitter, getSize, utils, Item);
       }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
@@ -54793,7 +54887,7 @@ return Outlayer;
 
 
 /***/ }),
-/* 543 */
+/* 546 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -54979,7 +55073,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 544 */
+/* 547 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {/**
@@ -55706,10 +55800,10 @@ process.umask = function() { return 0; };
   typeof self === "object" ? self : this
 );
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(97), __webpack_require__(543)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(97), __webpack_require__(546)))
 
 /***/ }),
-/* 545 */
+/* 548 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -55737,7 +55831,7 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 546 */
+/* 549 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(249);
