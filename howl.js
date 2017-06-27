@@ -15808,6 +15808,17 @@ var config = exports.config = {
     ecopwilderness: 'Potential Wilderness Areas',
     or7: 'The Journey of OR-7'
   },
+  dataPaths: {
+    ecoregions: 'data/pwildbyeco/ecoregions.json',
+    pwilderness: 'data/pwildbyeco/',
+    or7: 'data/or7/or7F.json',
+    or7StoryMapKmz: 'data/or7/or7.kmz',
+    or7JourneyLog: 'data/or7/or7entriesF.json',
+    or7AreasCrossed: 'data/or7/or7areascrossed.json',
+    or7WolfModel: 'data/or7/model/wolf.gltf',
+    wildfiresList: 'data/MTBS/MTBSOregonFiresGen20170531Sampled.json',
+    wildfiresFireKmz: 'data/MTBS/kmz/'
+  },
   /*ecoregionsImageryProvider:
     new Cesium.ArcGisMapServerImageryProvider(
       {
@@ -16093,7 +16104,7 @@ var viewdispatcher = exports.viewdispatcher = {
         view.restoreView();
       } else {
         //history.replaceState('', '', '.');
-        this.cleanUrl('.');
+        this.cleanUrl();
         view.setupView(_viewer);
         isHomeReady = true;
       }
@@ -16122,8 +16133,8 @@ var viewdispatcher = exports.viewdispatcher = {
     history.pushState('', '', url);
     viewFunction();
   },
-  cleanUrl: function cleanUrl(url) {
-    history.replaceState('', '', url);
+  cleanUrl: function cleanUrl() {
+    history.replaceState('', '', currentViewName ? '?view=' + currentViewName : '.');
   },
   getCurrentViewName: function getCurrentViewName() {
     return currentViewName;
@@ -30407,7 +30418,7 @@ function setupView(viewer) {
 
   _viewer.camera.flyTo(_config.config.initialCameraView);
 
-  data.getJSONData('data/pwildbyeco/ecoregions.json', function (data) {
+  data.getJSONData(_config.config.dataPaths.ecoregions, function (data) {
     ecoregionsData = data;
     var l = window.navigator.language;
     var o = { maximumFractionDigits: 0 };
@@ -30498,7 +30509,7 @@ function setupView(viewer) {
           gotoArea(eId);
         } else {
           //history.replaceState('', '', '?view=ecopwilderness');
-          _viewdispatcher.viewdispatcher.cleanUrl('?view=ecopwilderness');
+          _viewdispatcher.viewdispatcher.cleanUrl();
           gotoAll();
         }
       });
@@ -30527,7 +30538,7 @@ function restoreView() {
   } else {
     if (eId) {
       // This means invalid id and back button, so get rid of it
-      _viewdispatcher.viewdispatcher.cleanUrl('?view=ecopwilderness');
+      _viewdispatcher.viewdispatcher.cleanUrl();
       //history.replaceState('', '', '?view=ecopwilderness');
     }
     gotoAll();
@@ -30591,7 +30602,7 @@ function gotoArea(id) {
   savedState = {};
   $('.leaflet-popup-close-button').click();
 
-  _viewer.dataSources.add(Cesium.GeoJsonDataSource.load('data/pwildbyeco/' + id + '.json', {
+  _viewer.dataSources.add(Cesium.GeoJsonDataSource.load(_config.config.dataPaths.pwilderness + id + '.json', {
     clampToGround: true
   })).then(function (dataSource) {
     savedState.dataSource = dataSource;
@@ -30803,7 +30814,7 @@ function setupView(viewer) {
   _viewer.forceResize();
   _viewer.timeline.resize();
 
-  data.getJSONData('data/or7/or7F.json', function (data) {
+  data.getJSONData(_config.config.dataPaths.or7, function (data) {
     or7data = data;
 
     makeCZMLforOR7(function (or7CZML) {
@@ -30821,24 +30832,20 @@ function setupView(viewer) {
             utils.setPlaybackPauseMode();
           }, false));
 
-          var lastEventTime;
-          var lastDate;
+          var lastDayNumber;
           viewerCallbacks.push(_viewer.clock.onTick.addEventListener(function (event) {
-            if (!Cesium.JulianDate.equals(lastEventTime, event.currentTime)) {
-              // Do not work for nothing
-              lastEventTime = Cesium.JulianDate.clone(event.currentTime);
+            if (lastDayNumber !== event.currentTime.dayNumber) {
+              // Changed day? update label
+              lastDayNumber = event.currentTime.dayNumber;
               var currDate = Cesium.JulianDate.toDate(event.currentTime).toLocaleDateString('en-US', labelDateOptions);
-              if (lastDate !== currDate) {
-                lastDate = currDate;
-                $('#or7PosDate').text(currDate);
-                var propertyValues = or7dataSource.entities.getById('or7entries').properties.getValue(_viewer.clock.currentTime);
-                $('#or7LastEvent').text(propertyValues.entries);
-              }
+              $('#or7PosDate').text(currDate);
+              var propertyValues = or7dataSource.entities.getById('or7entries').properties.getValue(_viewer.clock.currentTime);
+              $('#or7LastEvent').text(propertyValues.entries);
+            }
 
-              // At the end of the journey, reset play button
-              if (event.currentTime.equals(_viewer.clock.stopTime)) {
-                utils.setPlaybackPauseMode();
-              }
+            // At the end of the journey, reset play button
+            if (event.currentTime.equals(_viewer.clock.stopTime)) {
+              utils.setPlaybackPauseMode();
             }
           }));
 
@@ -30899,11 +30906,11 @@ function setupView(viewer) {
           $('#summaryChartContainer').html((0, _or7Chart2.default)({ miles: Number(statsAll.distanceData[statsAll.distanceData.length - 1]).toLocaleString() }));
           setUpSummaryChart();
 
-          _viewdispatcher.viewdispatcher.cleanUrl('?view=or7');
+          _viewdispatcher.viewdispatcher.cleanUrl();
         });
       });
 
-      Cesium.KmlDataSource.load('data/or7/or7.kmz').then(function (dataSource) {
+      Cesium.KmlDataSource.load(_config.config.dataPaths.or7StoryMapKmz).then(function (dataSource) {
         or7kmlDataSource = dataSource;
         dataSource.show = false;
 
@@ -30991,7 +30998,7 @@ function makeCZMLforOR7(callback) {
     id: 'or7journey',
     availability: '',
     model: {
-      gltf: 'data/or7/model/wolf.gltf',
+      gltf: _config.config.dataPaths.or7WolfModel,
       scale: 1.5,
       minimumPixelSize: 128,
       //runAnimations: false,
@@ -31067,27 +31074,6 @@ function makeCZMLforOR7(callback) {
     };
   }
 
-  /*function LabelItem(id, prop, text) {
-     this.id = 'or7journey-l-' + id;
-    this.properties = prop;
-    //this.position = {cartographicDegrees: []};
-    if (prop.entryDate) {
-      this.availability = (new Date(prop.entryDate)).toISOString() + '/';
-      if (prop.exitDate) {
-        this.availability += (new Date(prop.exitDate)).toISOString();
-      } else {
-        this.availability += (new Date()).toISOString();
-      }
-    }
-    this.label = {
-      positions: {
-        cartographicDegrees: []
-      },
-      text: text,
-      fillColor: (Cesium.Color.BLACK)
-    }
-  }*/
-
   function getColor(properties) {
     var color = [255, 255, 255, 255];
     if (properties && properties.fill) {
@@ -31097,8 +31083,8 @@ function makeCZMLforOR7(callback) {
     return color;
   }
 
-  data.getJSONData('data/or7/or7entriesF.json', function (entries) {
-    data.getJSONData('data/or7/or7areascrossed.json', function (xareas) {
+  data.getJSONData(_config.config.dataPaths.or7JourneyLog, function (entries) {
+    data.getJSONData(_config.config.dataPaths.or7AreasCrossed, function (xareas) {
 
       // Assumption: first entry matches first coordinate and last entry matches last coordinate
       var fromDate = new Date(entries.features[0].properties.entryDate).toISOString();
@@ -31451,19 +31437,11 @@ function setupView(viewer) {
     return gregorianDate.year;
   };
 
-  //_viewer.terrainProvider = new Cesium.CesiumTerrainProvider({url : 'https://assets.agi.com/stk-terrain/world'});
-  //viewer.scene.globe.depthTestAgainstTerrain = true;
-
   _viewer.clock.shouldAnimate = false;
 
   _viewer.camera.flyTo(_config.config.initialCameraView);
 
-  /*viewerCallbacks.push(_viewer.scene.postRender.addEventListener(function()  {
-    utils.updateSpeedLabel(clockViewModel);
-  }));*/
-
-  //data.getJSONData('data/MTBS/MTBSCZML.json', function(data) {
-  data.getJSONData('data/MTBS/MTBSOregonFiresGen20170531Sampled.json', function (data) {
+  data.getJSONData(_config.config.dataPaths.wildfiresList, function (data) {
     fireListData = data;
     var statsAndCZML = makeCZMLAndStatsForListOfFires(fireListData);
     statsAll = statsAndCZML.statsAll;
@@ -31499,11 +31477,9 @@ function setupView(viewer) {
           }
         }));
         if (fireItems) {
-          // history.pushState('', '', '?view=wildfires&fireId=' + fireItems.fireId);
           gotoFire(fireItems);
         } else {
-          _viewdispatcher.viewdispatcher.cleanUrl('?view=wildfires');
-          //history.replaceState('', '', '?view=wildfires');
+          _viewdispatcher.viewdispatcher.cleanUrl();
           gotoAll();
         }
       });
@@ -31613,7 +31589,7 @@ function restoreView() {
   } else {
     if (fireId) {
       // This means invalid fireId and back button, so get rid of it
-      _viewdispatcher.viewdispatcher.cleanUrl('?view=wildfires');
+      _viewdispatcher.viewdispatcher.cleanUrl();
     }
     gotoAll();
   }
@@ -31708,8 +31684,7 @@ function setUpInfoBox() {
         $('#infoBox').html((0, _fireInfoBox2.default)(fireItems));
         showInfoBox();
         $('#ib-gotofire').click(function () {
-          /*history.pushState('', '', '?view=wildfires&fireId=' + fireItems.fireId);
-          gotoFire(fireItems); */
+
           _viewdispatcher.viewdispatcher.inViewDispatch(gotoFire.bind(this, fireItems), '?view=wildfires&fireId=' + fireItems.fireId);
           return false;
         });
@@ -31782,7 +31757,7 @@ function gotoFire(fireItems) {
     return false;
   });
   window.spinner.spin($('#spinner')[0]);
-  Cesium.KmlDataSource.load('data/MTBS/kmz/' + fireItems.kmzLink.split('/').pop(), { clampToGround: true }).then(function (dataSource) {
+  Cesium.KmlDataSource.load(_config.config.dataPaths.wildfiresFireKmz + fireItems.kmzLink.split('/').pop(), { clampToGround: true }).then(function (dataSource) {
     fireListDataSource.show = false;
 
     var idsToRemove = [];
