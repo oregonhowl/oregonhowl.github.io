@@ -15836,7 +15836,7 @@ var config = exports.config = {
     'Willamette Valley': { label: 'Willamette Valley', color: '#B57F22', lon: -123.01, lat: 45.13 },
     'Cascades': { label: 'Cascades', color: '#7CBA82', lon: -122.52, lat: 43.54 },
     'Klamath Mountains/California High North Coast Range': { label: 'Klamath Mountains', color: '#C4EF83', lon: -123.36, lat: 42.40 },
-    'Northern Basin and Range': { label: 'Northern Basin and Range', color: '#C1B28D', lon: 0, lat: 0 },
+    'Northern Basin and Range': { label: 'Northern Basin and Range', color: '#FECA50', lon: 0, lat: 0 },
     'Eastern Cascades Slopes and Foothills': { label: 'Eastern Cascades', color: '#98A162', lon: -121.27, lat: 42.61 }
   }
 };
@@ -16080,7 +16080,7 @@ var viewdispatcher = exports.viewdispatcher = {
     _viewer = viewer;
     window.onpopstate = function () {
       var viewName = utils.getUrlVars().view;
-      console.log('popstate', viewName);
+      // console.log('popstate', viewName);
       self.dispatch(viewName ? viewName : 'home', false);
     };
     $('.spotlightDropDownItem').click(function () {
@@ -16095,7 +16095,7 @@ var viewdispatcher = exports.viewdispatcher = {
     this.setUpSocialButtons('Highlighting Oregon\'s WildLands');
   },
   dispatch: function dispatch(viewName, pushFlag) {
-    console.log(currentViewName, viewName);
+    // console.log(currentViewName, viewName);
     var view = __webpack_require__(247)("./" + viewName + '.js');
     if (viewName === 'home') {
       $('#viewContainer').hide();
@@ -31753,9 +31753,9 @@ function gotoFire(fireItems) {
   utils.setPlaybackPauseMode();
   hideInfoBox();
   $('#infoPanel').html((0, _fireInfoPanel2.default)(fireItems));
-  $('#l-gotoall').click(function () {
+  /*$('#l-gotoall').click(function() {
     return false;
-  });
+  });*/
   window.spinner.spin($('#spinner')[0]);
   Cesium.KmlDataSource.load(_config.config.dataPaths.wildfiresFireKmz + fireItems.kmzLink.split('/').pop(), { clampToGround: true }).then(function (dataSource) {
     fireListDataSource.show = false;
@@ -31802,13 +31802,13 @@ function gotoFire(fireItems) {
         return false;
       });
 
-      $('#l-gotoall').click(function () {
-        //history.back();
-        /*history.pushState('', '', '?view=wildfires');
-        gotoAll();*/
-        _viewdispatcher.viewdispatcher.inViewDispatch(gotoAll, '?view=wildfires');
-        return false;
-      });
+      //$('#l-gotoall').click(function() {
+      //history.back();
+      /*history.pushState('', '', '?view=wildfires');
+      gotoAll();*/
+      //  viewdispatcher.inViewDispatch(gotoAll, '?view=wildfires');
+      //  return false;
+      //});
     });
   });
 }
@@ -51290,7 +51290,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 },"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1, alias1=container.lambda, alias2=container.escapeExpression;
 
-  return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><a id=\"l-gotoall\" href=\"#\"><b>Potential Wilderness Areas</b></a></div>\n  <div><small>(Click on link above to view ecoregions)</small></div>\n  <div><small>(Click on a map shape to view unit info)</small></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Ecoregion</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style=\"background:"
+  return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><a href=\"#\"><b>Potential Wilderness Areas</b></a></div>\n  <div><small>(Click on link above to view ecoregions)</small></div>\n  <div><small>(Click on a map shape to view unit info)</small></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Ecoregion</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style=\"background:"
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.singleLabel : depth0)) != null ? stack1.color : stack1), depth0))
     + ";\"></span><b> "
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.singleLabel : depth0)) != null ? stack1.label : stack1), depth0))
@@ -51550,7 +51550,7 @@ function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj);
 module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1;
 
-  return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><a id=\"l-gotoall\" href=\"#\"><b>History of Wildfire Severity</b></a></div>\n  <div><small>(Click on link above view all fires)</small></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Fire Name: "
+  return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><a href=\"#\"><b>History of Wildfire Severity</b></a></div>\n  <div><small>(Click on link above view all fires)</small></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Fire Name: "
     + container.escapeExpression(container.lambda((depth0 != null ? depth0.fireName : depth0), depth0))
     + "</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">"
     + ((stack1 = container.invokePartial(__webpack_require__(130),depth0,{"name":"fireItems","data":data,"helpers":helpers,"partials":partials,"decorators":container.decorators})) != null ? stack1 : "")
