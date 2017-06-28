@@ -15712,8 +15712,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 var config = exports.config = {
   versionString: 'v0.3.2<sup>Beta</sup>',
-  bingAPIKey: 'AmN4YMNTJKsD0E-WG0AG935u5Cb1g92Z8SyCa1F-sJFAUppvyEMUJUrO2F-boadU',
-  mapboxAccessToken: 'pk.eyJ1IjoiamltbXlhbmdlbCIsImEiOiJjaW5sMGR0cDkweXN2dHZseXl6OWM4YnloIn0.v2Sv_ODztWuLuk78rUoiqg',
   initialCameraView: {
     destination: Cesium.Cartesian3.fromDegrees(-120.84, 39.44, 460000),
     orientation: {
@@ -15766,24 +15764,7 @@ var config = exports.config = {
     }),
     name: 'Clearcuts on Federal Lands',
     legendSpan: '<span class="overlay-legend-item-stripes"></span>'
-  },
-  /*    {
-        provider:
-          new Cesium.ArcGisMapServerImageryProvider(
-            {
-              url: 'http://services.cfc.umt.edu/arcgis/rest/services/ProctectedAreas/Wilderness/MapServer',
-              layers: '2'
-            }
-          ),
-        name: 'Wilderness Areas',
-        alpha: 0.7,
-        legendSpan:
-          '<span class="overlay-legend-item" style="background:#FFFF02;"></span><span style="font-size: 80%; font-weight: 100;"> BLM </span>' +
-          '<span class="overlay-legend-item" style="background:#FFA900;"></span><span style="font-size: 80%; font-weight: 100;"> FWS </span>' +
-          '<span class="overlay-legend-item" style="background:#38A801;"></span><span style="font-size: 80%; font-weight: 100;"> FS </span>' +
-          '<span class="overlay-legend-item" style="background:#A80085;"></span><span style="font-size: 80%; font-weight: 100;"> NPS </span>'
-      },*/
-  {
+  }, {
     provider: new Cesium.UrlTemplateImageryProvider({
       url: 'data/tiles/wilderness/{z}/{x}/{y}.png',
       maximumLevel: 13,
@@ -15819,15 +15800,6 @@ var config = exports.config = {
     wildfiresList: 'data/MTBS/MTBSOregonFiresGen20170531Sampled.json',
     wildfiresFireKmz: 'data/MTBS/kmz/'
   },
-  /*ecoregionsImageryProvider:
-    new Cesium.ArcGisMapServerImageryProvider(
-      {
-        url: 'https://nrimp.dfw.state.or.us/arcgis/rest/services/Compass/Ecoregions/MapServer',
-        layers: '0',
-        enablePickFeatures: true,
-        credit: 'Oregon Department of Fish and Wildlife'
-      }
-    ),*/
   ecoRegionColors: {
     'Coast Range': { label: 'Coast Range', color: '#ABB9D1', lon: -123.81, lat: 43.68 },
     'Columbia Plateau': { label: 'Columbia Plateau', color: '#FF741A', lon: 0, lat: 0 },
@@ -30093,17 +30065,12 @@ window.spinner = new _spin2.default(_config.config.spinnerOpts);
 
 function setup3dMap(viewName) {
 
-  //var view = require('./views/' + viewName + '.js');
-
   $('#summary-btn').click(function () {
     $('#summaryModal').modal('show');
     return false;
   });
 
   setUpCollapsibleInfoPanel();
-
-  Cesium.BingMapsApi.defaultKey = _config.config.bingAPIKey;
-  Cesium.MapboxApi.defaultAccessToken = _config.config.mapboxAccessToken;
 
   viewer = new Cesium.Viewer('cesiumContainer', {
     baseLayerPicker: false,
@@ -30113,7 +30080,6 @@ function setup3dMap(viewName) {
     homeButton: false,
     fullscreenButton: false,
     scene3DOnly: true,
-    //creditContainer: 'creditContainer',
     infoBox: false,
     navigationHelpButton: false,
     geocoder: false,
@@ -30431,7 +30397,6 @@ function setupView(viewer) {
     setUpSummaryChart();
 
     ecoregionsData.features.forEach(function (feature) {
-      //console.log(config.ecoRegionColors[feature.properties.US_L3NAME], feature.properties.acres);
       var acres = parseInt(feature.properties.acres ? feature.properties.acres : 0);
       // TODO: replace the below with a local data structure, not config
       _config.config.ecoRegionColors[feature.properties.US_L3NAME].acres = acres.toLocaleString(l, o);
@@ -30451,7 +30416,6 @@ function setupView(viewer) {
         entity.polygon.closeBottom = false;
         entity.polygon.closeTop = true;
         entity.polygon.show = false;
-        //eHeight = (entity.properties.acres.getValue())/40;
 
         entity.polygon.extrudedHeight = eHeight;
 
@@ -30489,7 +30453,6 @@ function setupView(viewer) {
             extrudedHeight: eHeight
           });
         }
-        //entity.polygon = undefined;
       });
 
       _viewer.dataSources.add(dataSource).then(function () {
@@ -30508,7 +30471,6 @@ function setupView(viewer) {
         if (eId && isValideId(eId)) {
           gotoArea(eId);
         } else {
-          //history.replaceState('', '', '?view=ecopwilderness');
           _viewdispatcher.viewdispatcher.cleanUrl();
           gotoAll();
         }
@@ -30539,7 +30501,6 @@ function restoreView() {
     if (eId) {
       // This means invalid id and back button, so get rid of it
       _viewdispatcher.viewdispatcher.cleanUrl();
-      //history.replaceState('', '', '?view=ecopwilderness');
     }
     gotoAll();
   }
@@ -30550,7 +30511,6 @@ function wipeoutView() {
   _viewer.forceResize();
   $(_viewer.selectionIndicator.viewModel.selectionIndicatorElement).css('visibility', 'visible');
   _viewer.dataSources.remove(ecoregionsDataSource, true);
-  //_viewer.imageryLayers.remove(ecoregionsLayer);
   cleanupDrillDown();
   ecoregionsData = ecoregionsDataSource = savedState = undefined;
 }
@@ -30577,11 +30537,6 @@ function gotoAll() {
     labels: _config.config.ecoRegionColors
   }));
   colorizeDataSourceEntities(ecoregionsDataSource, 1);
-  /*$('#infoPanelTransparency').change(function() {
-    var t=($(this).val())/100;
-    colorizeDataSourceEntities(ecoregionsDataSource, t);
-  });
-  $('#infoPanelTransparency').change();*/
   if (savedState) {
     _viewer.dataSources.remove(savedState.dataSource, true);
   }
@@ -30618,8 +30573,10 @@ function gotoArea(id) {
       if (!units.includes(entry)) {
         units.push(entry);
       }
-      //entity.polygon.extrudedHeight = 4000;
     });
+
+    displayEcoregionBoundary(id);
+
     $('#infoPanel').html((0, _ecopwildernessInfoPanel2.default)({
       singleLabel: _config.config.ecoRegionColors[getEcoregionNameForId(id)],
       labels: _config.config.ecoRegionColors,
@@ -30641,9 +30598,31 @@ function gotoArea(id) {
   });
 }
 
+function displayEcoregionBoundary(id) {
+  savedState.boundaryEntities = [];
+  ecoregionsDataSource.entities.values.forEach(function (entity) {
+    if (entity.corridor && entity.name === getEcoregionNameForId(id)) {
+      savedState.boundaryEntities.push(_viewer.entities.add({
+        name: entity.name,
+        properties: {
+          doNotPick: true
+        },
+        corridor: {
+          positions: entity.corridor.positions,
+          width: 800,
+          material: Cesium.Color.fromCssColorString('#000000').withAlpha(0.8)
+        }
+      }));
+    }
+  });
+}
+
 function cleanupDrillDown() {
   if (savedState) {
     _viewer.dataSources.remove(savedState.dataSource, true);
+    savedState.boundaryEntities.forEach(function (boundaryEntity) {
+      _viewer.entities.remove(boundaryEntity, true);
+    });
   }
 }
 
@@ -51290,7 +51269,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 },"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1, alias1=container.lambda, alias2=container.escapeExpression;
 
-  return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><a href=\"#\"><b>Potential Wilderness Areas</b></a></div>\n  <div><small>(Click on link above to view ecoregions)</small></div>\n  <div><small>(Click on a map shape to view unit info)</small></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Ecoregion</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style=\"background:"
+  return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><a href=\"#\"><b>Potential Wilderness Areas</b></a></div>\n  <div><small>(Click on link above to view ecoregions)</small></div>\n  <div><small>(Click on a map shape to view unit info)</small></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Ecoregion</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"boundary-legend-item\"></span><b> Ecoregion Boundary</b></li>\n          <li><span class=\"legend-item\" style=\"background:"
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.singleLabel : depth0)) != null ? stack1.color : stack1), depth0))
     + ";\"></span><b> "
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.singleLabel : depth0)) != null ? stack1.label : stack1), depth0))
@@ -51314,7 +51293,7 @@ function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj);
 module.exports = (Handlebars["default"] || Handlebars).template({"1":function(container,depth0,helpers,partials,data) {
     var helper, alias1=container.escapeExpression, alias2=depth0 != null ? depth0 : {}, alias3=helpers.helperMissing, alias4="function";
 
-  return "          <li></span><b>"
+  return "          <li><b>"
     + alias1(container.lambda((depth0 != null ? depth0.label : depth0), depth0))
     + "</b> ("
     + alias1(((helper = (helper = helpers.acres || (depth0 != null ? depth0.acres : depth0)) != null ? helper : alias3),(typeof helper === alias4 ? helper.call(alias2,{"name":"acres","hash":{},"data":data}) : helper)))
