@@ -30083,6 +30083,7 @@ function setup3dMap(viewName) {
     infoBox: false,
     navigationHelpButton: false,
     geocoder: false,
+    skyBox: false,
     terrainExaggeration: 2
   });
 
