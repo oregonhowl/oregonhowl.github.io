@@ -15711,7 +15711,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var config = exports.config = {
-  versionString: 'v0.3.3<sup>Beta</sup>',
+  versionString: 'v0.3.4<sup>Beta</sup>',
   initialCameraView: {
     destination: Cesium.Cartesian3.fromDegrees(-120.84, 39.44, 460000),
     orientation: {
@@ -15779,14 +15779,14 @@ var config = exports.config = {
       maximumLevel: 13,
       rectangle: Cesium.Rectangle.fromDegrees(-124.5383, 41.8818, -116.4359, 46.0237)
     }),
-    name: 'Potential Wilderness Areas',
+    name: 'Potential Forest Wilderness Areas',
     alpha: 0.9,
     legendSpan: '<span class="overlay-legend-item-gstripes"></span>'
   }],
   views: ['home', 'wildfires', 'ecopwilderness', 'or7'],
   viewLabels: {
     wildfires: 'History of Wildfire Severity',
-    ecopwilderness: 'Potential Wilderness Areas',
+    ecopwilderness: 'Potential Forest Wilderness Areas',
     or7: 'The Journey of Wolf OR-7'
   },
   dataPaths: {
@@ -30861,8 +30861,8 @@ function setupView(viewer) {
           $('#hangoutTransparency').change(function () {
             var t = $(this).val() / 100;
             or7dataSource.entities.values.forEach(function (entity) {
-              if (entity.polygon && entity.properties.getValue().areaType === 'hangout') {
-                entity.polygon.material = entity.polygon.material.color.getValue().withAlpha(t);
+              if (entity.corridor && entity.properties.getValue().areaType === 'hangout') {
+                entity.corridor.material = entity.corridor.material.color.getValue().withAlpha(t);
               }
             });
           });
@@ -30877,6 +30877,15 @@ function setupView(viewer) {
             });
           });
           $('#wildernessTransparency').change();
+
+          $('#hide-labels-option').change(function () {
+            var hideLabels = $(this).is(":checked");
+            or7dataSource.entities.values.forEach(function (entity) {
+              if (entity.label && entity.properties.getValue().areaType === 'hangout') {
+                entity.label.show = !hideLabels;
+              }
+            });
+          });
 
           setUpViewPhotos();
 
@@ -31054,6 +31063,72 @@ function makeCZMLforOR7(callback) {
     };
   }
 
+  function PolygonOutlineItem(id, prop) {
+
+    this.id = 'or7journey-o-' + id;
+    this.properties = prop;
+    this.properties.doNotPick = true;
+    this.position = { cartographicDegrees: [] };
+    if (prop.entryDate) {
+      this.availability = new Date(prop.entryDate).toISOString() + '/';
+      if (prop.exitDate) {
+        this.availability += new Date(prop.exitDate).toISOString();
+      } else {
+        this.availability += new Date().toISOString();
+      }
+    }
+    this.corridor = {
+      width: 800,
+      positions: {
+        cartographicDegrees: []
+      },
+      material: {
+        solidColor: {
+          color: {
+            rgba: getColor(prop)
+          }
+        }
+      }
+    };
+  }
+
+  function LabelItem(id, prop) {
+
+    this.id = 'or7journey-l-' + id;
+    this.properties = prop;
+    this.properties.doNotPick = true;
+    this.position = { cartographicDegrees: [] };
+    if (prop.entryDate) {
+      this.availability = new Date(prop.entryDate).toISOString() + '/';
+      if (prop.exitDate) {
+        this.availability += new Date(prop.exitDate).toISOString();
+      } else {
+        this.availability += new Date().toISOString();
+      }
+    }
+    this.label = {
+      text: prop.areaText ? prop.areaText : '',
+      font: '14px sans-serif',
+      fillColor: {
+        rgba: Cesium.Color.BLACK.toBytes()
+      },
+      showBackground: true,
+      backgroundColor: {
+        rgba: Cesium.Color.fromCssColorString('#F0F0F0').withAlpha(0.8).toBytes()
+      },
+      backgroundPadding: {
+        cartesian2: [10, 10]
+      },
+      outlineColor: {
+        rgba: Cesium.Color.fromCssColorString('#F8F8F8').withAlpha(0.8).toBytes()
+      },
+      heightReference: 'CLAMP_TO_GROUND',
+      pixelOffset: {
+        cartesian2: prop.pixelOffset ? prop.pixelOffset : [0, 0]
+      }
+    };
+  }
+
   function getColor(properties) {
     var color = [255, 255, 255, 255];
     if (properties && properties.fill) {
@@ -31118,6 +31193,22 @@ function makeCZMLforOR7(callback) {
       entryIndex = 0;
       var itemId = 0;
       or7data.features.forEach(function (or7f) {
+        xareas.features.forEach(function (xarea) {
+
+          // Add polygons for crossing areas
+          if (xarea.geometry.type === 'Polygon') {
+            var polygonItem = new PolygonItem(itemId++, xarea.properties);
+            polygonItem.position.cartographicDegrees.push(xarea.geometry.coordinates[0][0][0], xarea.geometry.coordinates[0][0][1], 0);
+            xarea.geometry.coordinates[0].forEach(function (xareaCoord) {
+              polygonItem.polygon.positions.cartographicDegrees.push(xareaCoord[0]);
+              polygonItem.polygon.positions.cartographicDegrees.push(xareaCoord[1]);
+              polygonItem.polygon.positions.cartographicDegrees.push(0);
+            });
+            or7CZML.push(polygonItem);
+          }
+        });
+
+        // Add journey entities
         if (or7f.geometry.type === 'LineString') {
           var corridorItem = new CorridorItem(itemId++, or7f.properties);
           var corridorOutlineItem = new CorridorItem(itemId++, or7f.properties, '#8D6E27');
@@ -31155,29 +31246,20 @@ function makeCZMLforOR7(callback) {
           or7CZML.push(corridorItem);
         }
         if (or7f.geometry.type === 'Polygon') {
-          var polygonItem = new PolygonItem(itemId++, or7f.properties);
-          polygonItem.position.cartographicDegrees.push(or7f.geometry.coordinates[0][0][0], or7f.geometry.coordinates[0][0][1], or7f.geometry.coordinates[0][0][2]);
+          var polygonOutlineItem = new PolygonOutlineItem(itemId++, or7f.properties);
+          var labelItem = new LabelItem(itemId++, or7f.properties);
+          polygonOutlineItem.position.cartographicDegrees.push(or7f.geometry.coordinates[0][0][0], or7f.geometry.coordinates[0][0][1], or7f.geometry.coordinates[0][0][2]);
+          labelItem.position.cartographicDegrees.push(or7f.geometry.coordinates[0][0][0], or7f.geometry.coordinates[0][0][1], or7f.geometry.coordinates[0][0][2]);
           or7f.geometry.coordinates[0].forEach(function (or7Coord) {
-            polygonItem.polygon.positions.cartographicDegrees.push(or7Coord[0]);
-            polygonItem.polygon.positions.cartographicDegrees.push(or7Coord[1]);
-            polygonItem.polygon.positions.cartographicDegrees.push(0);
+            polygonOutlineItem.corridor.positions.cartographicDegrees.push(or7Coord[0]);
+            polygonOutlineItem.corridor.positions.cartographicDegrees.push(or7Coord[1]);
+            polygonOutlineItem.corridor.positions.cartographicDegrees.push(0);
           });
-          or7CZML.push(polygonItem);
+          or7CZML.push(polygonOutlineItem);
+          or7CZML.push(labelItem);
         }
       });
 
-      xareas.features.forEach(function (xarea) {
-        if (xarea.geometry.type === 'Polygon') {
-          var polygonItem = new PolygonItem(itemId++, xarea.properties);
-          polygonItem.position.cartographicDegrees.push(xarea.geometry.coordinates[0][0][0], xarea.geometry.coordinates[0][0][1], 0);
-          xarea.geometry.coordinates[0].forEach(function (xareaCoord) {
-            polygonItem.polygon.positions.cartographicDegrees.push(xareaCoord[0]);
-            polygonItem.polygon.positions.cartographicDegrees.push(xareaCoord[1]);
-            polygonItem.polygon.positions.cartographicDegrees.push(0);
-          });
-          or7CZML.push(polygonItem);
-        }
-      });
       fixStats();
 
       callback(or7CZML);
@@ -51252,7 +51334,7 @@ function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj);
 module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var helper;
 
-  return "<div style=\"text-align: center; color: #666; font-size: 18px;\">\n  <b>Oregon's Potential Wilderness Areas by Ecoregion</b><br>("
+  return "<div style=\"text-align: center; color: #666; font-size: 18px;\">\n  <b>Oregon's Potential Forest Wilderness Areas by Ecoregion</b><br>("
     + container.escapeExpression(((helper = (helper = helpers.acres || (depth0 != null ? depth0.acres : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : {},{"name":"acres","hash":{},"data":data}) : helper)))
     + " thousand acres total)\n</div>\n<canvas id='summaryChart'></canvas>\n<div style=\"font-size: 80%\">Data source: <a href=\"http://oregonwild.org/\" target=\"_blank\">Oregon Wild</a>, May 2017</div>\n";
 },"useData":true});
@@ -51270,7 +51352,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 },"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1, alias1=container.lambda, alias2=container.escapeExpression;
 
-  return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><a href=\"#\"><b>Potential Wilderness Areas</b></a></div>\n  <div><small>(Click on link above to view ecoregions)</small></div>\n  <div><small>(Click on a map shape to view unit info)</small></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Ecoregion</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"boundary-legend-item\"></span><b> Ecoregion Boundary</b></li>\n          <li><span class=\"legend-item\" style=\"background:"
+  return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><a href=\"#\"><b>Potential Forest Wilderness Areas</b></a></div>\n  <div><small>(Click on link above to view ecoregions)</small></div>\n  <div><small>(Click on a map shape to view unit info)</small></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Ecoregion</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"boundary-legend-item\"></span><b> Ecoregion Boundary</b></li>\n          <li><span class=\"legend-item\" style=\"background:"
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.singleLabel : depth0)) != null ? stack1.color : stack1), depth0))
     + ";\"></span><b> "
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.singleLabel : depth0)) != null ? stack1.label : stack1), depth0))
@@ -51304,7 +51386,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 },"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1;
 
-  return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><b>Potential Wilderness Areas</b></div>\n  <div><small>(Click on an ecoregion to view areas)</small></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Ecoregions</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n"
+  return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><b>Potential Forest Wilderness Areas</b></div>\n  <div><small>(Click on an ecoregion to view areas)</small></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Ecoregions</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n"
     + ((stack1 = helpers.each.call(depth0 != null ? depth0 : {},(depth0 != null ? depth0.labels : depth0),{"name":"each","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "        </ul>\n      </div>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Wilderness Acreage</div>\n    <div class=\"legend-scale\">\n      <ul>\n        <li style='width: 80px;'><span class='sshape' style='width: 60px; height: 20px;'></span><br>Less</li>\n        <li style='width: 80px;'><span class='lshape' style='width: 60px; height: 40px;'></span><br> More</li>\n      </ul>\n    </div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Source: <a href=\"http://www.oregonwild.org/\" target=\"_blank\">Oregon Wild</a></div>\n</div>\n";
 },"useData":true});
@@ -51356,7 +51438,7 @@ function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj);
 module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1, helper;
 
-  return "<div class=\"container-fluid\">\n  <div class=\"row navbar-inverse\">\n    <div id=\"homeLogo\"><img id=\"homeLogoImage\" src=\"" + __webpack_require__(498) + "\"></img></div>\n  </div>\n  <div class=\"row\" style=\"background-color: #F0F0F0;\">\n    <div style=\"margin: 10px;\">\n      <h3>Highlighting Oregon's WildLands</h3>\n      <p style=\"font-size: 130%; font-weight: 300\">Oregon is a wonderful state. It is beautiful and it is wild. Mountains, ancient forests, clear waters and wildlife. But most of Oregon's incredible wildlands are not protected, and therefore are in serious danger of irreparable destruction. The purpose of this site is to raise awareness of Oregon's wildlands through selected 3D map-based 'spotlights.' This site will be updated and new 'spotlights' will be added over time, so be sure to check back every now and then to see what's going on.</p>\n    </div>\n  </div>\n  <div id=\"noWebGLMessage\" class=\"row\" style=\"display: none; font-size: 130%; background-color: #F0E68C;\">\n    <br>Unfortunately your browser does not support WebGL graphics. Therefore, the spotlights below are not available for viewing.\n    <br><br>\n  </div>\n  <div class=\"row spacer\"></div>\n  <div class=\"row\">\n    <h4>SPOTLIGHTS</h4>\n  </div>\n</div>\n<div class=\"container-fluid\" style=\"height: 90%; y-overflow: scroll;\">\n  <div class=\"row\">\n    <div class=\"grid\">\n      <div class=\"grid-sizer\"></div>\n      <div class=\"grid-item\">\n        <div class=\"panel panel-default\">\n          <a class=\"homeViewLinkItem\" view=\"wildfires\" href=\"#\">\n            <img class=\"img-responsive img-hover-effect\" style=\"padding: 5px;\" src=\"" + __webpack_require__(501) + "\" alt=\"\">\n          </a>\n          <div style=\"font-size: 70%; margin-top: -5px;\">Photo by the Oregon Department of Forestry</div>\n          <div class=\"panel-footer text-center\">\n            History of Wildfire Severity\n          </div>\n          <div class=\"panel-caption text-center\">\n            In the Pacific Northwest, fire is a natural part of healthy forests. Since 2004 the Federal Government has been conducting detailed wildfire severity assessments by analyzing before and after LANDSAT satellite images of fire boundaries. This 'spotlight' shows the history of wildfires in Oregon and their severity since 1984.\n          </div>\n        </div>\n      </div>\n      <div class=\"grid-item\">\n        <div class=\"panel panel-default\">\n          <a class=\"homeViewLinkItem\" view=\"ecopwilderness\" href=\"#\">\n            <img class=\"img-responsive img-hover-effect\" style=\"padding: 5px;\" src=\"" + __webpack_require__(500) + "\" alt=\"\">\n          </a>\n          <div style=\"font-size: 70%; margin-top: -5px;\">Photo by Wikipedia user Axcordion</div>\n          <div class=\"panel-footer text-center\">\n            Potential Wilderness Areas\n          </div>\n          <div class=\"panel-caption text-center\">\n            Did you know that Oregon has the least amount of proportional protected wilderness area as compared to California and Washington? 4% versus 15% and 10% respectively! Using this 'spotlight' you can explore potential wilderness areas that would raise Oregon to be on par with its neighbors.\n          </div>\n        </div>\n      </div>\n      <div class=\"grid-item\">\n        <div class=\"panel panel-default\">\n          <a class=\"homeViewLinkItem\" view=\"or7\" href=\"#\">\n            <img class=\"img-responsive img-hover-effect\" style=\"padding: 5px;\" src=\"" + __webpack_require__(499) + "\" alt=\"\">\n          </a>\n          <div style=\"font-size: 70%; margin-top: -5px;\">Photo by the Oregon Department of Fish and Wildlife</div>\n          <div class=\"panel-footer text-center\">\n            The Journey of Wolf OR-7\n          </div>\n          <div class=\"panel-caption text-center\">\n            In 2011 a wolf by the name of OR-7, Journey, decided to break away from its pack in Northeast Oregon and march over 1,000 miles all the way to California through wilderness and roadless areas looking for a mate to establish his own pack. OR-7 had a GPS collar, so his route has been thoroughly recorded. This 'spotlight' shows the incredible journey of OR-7.\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n  <div class=\"row spacer\"></div>\n  <div class=\"row navbar-inverse\" style=\"margin: 0 auto;\">\n    <div class=\"row spacer\"></div>\n    <h4 class=\"nav\" style=\"color: white;\">\n      <a href=\"#\" title=\"Share on Twitter\" class=\"home-button btn-twitter\">\n        <span class=\"fa-stack fa-lg\">\n          <i class=\"fa fa-circle-thin fa-stack-2x\"></i>\n          <i class=\"fa fa-twitter fa-stack-1x\"></i>\n        </span>\n      </a>\n      <a href=\"#\" title=\"Share on Facebook\" class=\"home-button btn-facebook\">\n        <span class=\"fa-stack fa-lg\">\n          <i class=\"fa fa-circle-thin fa-stack-2x\"></i>\n          <i class=\"fa fa-facebook fa-stack-1x\"></i>\n        </span>\n      </a>\n    </h4>\n    <br>\n    <small style=\"color: #9D9D9D;\"><a class=\"home-button\" target=\"_blank\" href=\"https://github.com/jimmyangel/howl\">HOWL "
+  return "<div class=\"container-fluid\">\n  <div class=\"row navbar-inverse\">\n    <div id=\"homeLogo\"><img id=\"homeLogoImage\" src=\"" + __webpack_require__(498) + "\"></img></div>\n  </div>\n  <div class=\"row\" style=\"background-color: #F0F0F0;\">\n    <div style=\"margin: 10px;\">\n      <h3>Highlighting Oregon's WildLands</h3>\n      <p style=\"font-size: 130%; font-weight: 300\">Oregon is a wonderful state. It is beautiful and it is wild. Mountains, ancient forests, clear waters and wildlife. But most of Oregon's incredible wildlands are not protected, and therefore are in serious danger of irreparable destruction. The purpose of this site is to raise awareness of Oregon's wildlands through selected 3D map-based 'spotlights.' This site will be updated and new 'spotlights' will be added over time, so be sure to check back every now and then to see what's going on.</p>\n    </div>\n  </div>\n  <div id=\"noWebGLMessage\" class=\"row\" style=\"display: none; font-size: 130%; background-color: #F0E68C;\">\n    <br>Unfortunately your browser does not support WebGL graphics. Therefore, the spotlights below are not available for viewing.\n    <br><br>\n  </div>\n  <div class=\"row spacer\"></div>\n  <div class=\"row\">\n    <h4>SPOTLIGHTS</h4>\n  </div>\n</div>\n<div class=\"container-fluid\" style=\"height: 90%; y-overflow: scroll;\">\n  <div class=\"row\">\n    <div class=\"grid\">\n      <div class=\"grid-sizer\"></div>\n      <div class=\"grid-item\">\n        <div class=\"panel panel-default\">\n          <a class=\"homeViewLinkItem\" view=\"wildfires\" href=\"#\">\n            <img class=\"img-responsive img-hover-effect\" style=\"padding: 5px;\" src=\"" + __webpack_require__(501) + "\" alt=\"\">\n          </a>\n          <div style=\"font-size: 70%; margin-top: -5px;\">Photo by the Oregon Department of Forestry</div>\n          <div class=\"panel-footer text-center\">\n            History of Wildfire Severity\n          </div>\n          <div class=\"panel-caption text-center\">\n            In the Pacific Northwest, fire is a natural part of healthy forests. Since 2004 the Federal Government has been conducting detailed wildfire severity assessments by analyzing before and after LANDSAT satellite images of fire boundaries. This 'spotlight' shows the history of wildfires in Oregon and their severity since 1984.\n          </div>\n        </div>\n      </div>\n      <div class=\"grid-item\">\n        <div class=\"panel panel-default\">\n          <a class=\"homeViewLinkItem\" view=\"ecopwilderness\" href=\"#\">\n            <img class=\"img-responsive img-hover-effect\" style=\"padding: 5px;\" src=\"" + __webpack_require__(500) + "\" alt=\"\">\n          </a>\n          <div style=\"font-size: 70%; margin-top: -5px;\">Photo by Wikipedia user Axcordion</div>\n          <div class=\"panel-footer text-center\">\n            Potential Forest Wilderness\n          </div>\n          <div class=\"panel-caption text-center\">\n            Did you know that Oregon has the least amount of proportional protected wilderness area as compared to California and Washington? 4% versus 15% and 10% respectively! Using this 'spotlight' you can explore potential forest wilderness areas that would raise Oregon to be on par with its neighbors.\n          </div>\n        </div>\n      </div>\n      <div class=\"grid-item\">\n        <div class=\"panel panel-default\">\n          <a class=\"homeViewLinkItem\" view=\"or7\" href=\"#\">\n            <img class=\"img-responsive img-hover-effect\" style=\"padding: 5px;\" src=\"" + __webpack_require__(499) + "\" alt=\"\">\n          </a>\n          <div style=\"font-size: 70%; margin-top: -5px;\">Photo by the Oregon Department of Fish and Wildlife</div>\n          <div class=\"panel-footer text-center\">\n            The Journey of Wolf OR-7\n          </div>\n          <div class=\"panel-caption text-center\">\n            In 2011 a wolf by the name of OR-7, Journey, decided to break away from its pack in Northeast Oregon and march over 1,000 miles all the way to California through wilderness and roadless areas looking for a mate to establish his own pack. OR-7 had a GPS collar, so his route has been thoroughly recorded. This 'spotlight' shows the incredible journey of OR-7.\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n  <div class=\"row spacer\"></div>\n  <div class=\"row navbar-inverse\" style=\"margin: 0 auto;\">\n    <div class=\"row spacer\"></div>\n    <h4 class=\"nav\" style=\"color: white;\">\n      <a href=\"#\" title=\"Share on Twitter\" class=\"home-button btn-twitter\">\n        <span class=\"fa-stack fa-lg\">\n          <i class=\"fa fa-circle-thin fa-stack-2x\"></i>\n          <i class=\"fa fa-twitter fa-stack-1x\"></i>\n        </span>\n      </a>\n      <a href=\"#\" title=\"Share on Facebook\" class=\"home-button btn-facebook\">\n        <span class=\"fa-stack fa-lg\">\n          <i class=\"fa fa-circle-thin fa-stack-2x\"></i>\n          <i class=\"fa fa-facebook fa-stack-1x\"></i>\n        </span>\n      </a>\n    </h4>\n    <br>\n    <small style=\"color: #9D9D9D;\"><a class=\"home-button\" target=\"_blank\" href=\"https://github.com/jimmyangel/howl\">HOWL "
     + ((stack1 = ((helper = (helper = helpers.version || (depth0 != null ? depth0.version : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : {},{"name":"version","hash":{},"data":data}) : helper))) != null ? stack1 : "")
     + "</a> • Made for <a class=\"home-button\" target=\"_blank\" href=\"http://oregonwild.org/\">Oregon Wild</a></small>\n  </div>\n</div>\n";
 },"useData":true});
@@ -51430,7 +51512,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 var Handlebars = __webpack_require__(7);
 function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj); }
 module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
-    return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><b>The Journey of Wolf OR-7</b></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Timeline playback</div>\n    <div class=\"legend-subtitle\">[Running @ <b><span id='secsperyear'>3</span></b> seconds per year]</div>\n    <div class=\"playback-controls\">\n      <div>\n        <div class=\"howl-control\">\n          <a id=\"pb-slower\" href=\"#\" title=\"Faster\"><img src=\"" + __webpack_require__(129) + "\"></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-start\" href=\"#\" title=\"Start\"><span class=\"glyphicon glyphicon-step-backward\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-play\" href=\"#\" title=\"Play/Pause\"><span class=\"glyphicon glyphicon-play\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-end\" href=\"#\" title=\"End\"><span class=\"glyphicon glyphicon-step-forward\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-faster\" href=\"#\" title=\"Faster\"><img src=\"" + __webpack_require__(128) + "\"></a>\n        </div>\n      </div>\n    </div>\n    <div class=\"legend-explanation\">Use buttons for playback control</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Wilderness Crossings</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style='background:#08ff00;'></span> Wilderness Area</li>\n          <li><span class=\"legend-item\" style='background:#d0ff00;'></span> Potential Wilderness Area</li>\n        </ul>\n      </div>\n    </div>\n    <div style=\"margin: 4px;\"><input id=\"wildernessTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Hangout Areas</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style='background:#808000;'></span> Klamath Wander Area</li>\n          <li><span class=\"legend-item\" style='background:#996633;'></span> Oregon Residence Area</li>\n        </ul>\n      </div>\n    </div>\n    <div style=\"margin: 4px;\"><input id=\"hangoutTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR7 Expedition Story Map</div>\n    <div class=\"legend-entry\"><span><input id=\"story-map-overlay\" type=\"checkbox\"></span> Display story map overlay</div>\n    <div style=\"margin: 4px;\"><input id=\"storymapTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Journey log</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <ul id=\"logEntries\" class=\"v-legend-items\">\n      </ul>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR-7 Information Links</div>\n    <div class=\"legend-entry\" style=\"text-align: center; margin-left: 4px;\">\n      <ul class=\"v-legend-items\">\n        <div class=\"hline\"></div>\n        <div>Oregon Wild</div>\n        <a href=\"http://www.oregonwild.org/wildlife/wolves/the-journey-of-or7\" target=\"_blank\">Don't Stop Believing: The Journey of Wolf OR-7</a><br>\n        <div class=\"hline\"></div>\n        <div>Oregon Department of Fish and Wildlife</div>\n        <a href=\"http://www.dfw.state.or.us/Wolves/index.asp\" target=\"_blank\">Wolves in Oregon</a><br>\n        <a href=\"https://www.flickr.com/photos/odfw/sets/72157623481759903/\" target=\"_blank\">Photos - Mammals: Canine; Wolves</a><br>\n        <a href=\"http://www.dfw.state.or.us/Wolves/Packs/Rogue.asp\" target=\"_blank\">Rogue Pack</a><br>\n        <div class=\"hline\"></div>\n        <div>California Department of Fish and Wildlife</div>\n        <a href=\"https://www.wildlife.ca.gov/Conservation/Mammals/Gray-Wolf/OR7-Story\" target=\"_blank\">OR-7 – A Lone Wolf's Story</a><br>\n        <div class=\"hline\"></div>\n        <div>Documentaries</div>\n        <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a><br>\n        <a href=\"https://www.or7themovie.com/\" target=\"_blank\">OR7 - The Journey</a>\n        <div class=\"hline\"></div>\n        <div>Books</div>\n        <a href=\"https://www.amazon.com/Journey-Amazing-7-Oregon-History/dp/1629013994\" target=\"_blank\">Journey: The Amazing Story of OR-7</a><br>\n        <a href=\"https://www.amazon.com/Journey-Based-True-Story-Famous/dp/1632170655\" target=\"_blank\">Journey: Based on the True Story of OR7</a>\n\n      </ul>\n    </div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Sources:\n    <a href=\"http://www.oregonwild.org/\" target=\"_blank\">Oregon Wild</a>,\n    <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a>\n  </div>\n</div>\n";
+    return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><b>The Journey of Wolf OR-7</b></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Timeline playback</div>\n    <div class=\"legend-subtitle\">[Running @ <b><span id='secsperyear'>3</span></b> seconds per year]</div>\n    <div class=\"playback-controls\">\n      <div>\n        <div class=\"howl-control\">\n          <a id=\"pb-slower\" href=\"#\" title=\"Faster\"><img src=\"" + __webpack_require__(129) + "\"></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-start\" href=\"#\" title=\"Start\"><span class=\"glyphicon glyphicon-step-backward\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-play\" href=\"#\" title=\"Play/Pause\"><span class=\"glyphicon glyphicon-play\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-end\" href=\"#\" title=\"End\"><span class=\"glyphicon glyphicon-step-forward\" aria-hidden=\"true\"></span></a>\n        </div>\n        <div class=\"howl-control\">\n          <a id=\"pb-faster\" href=\"#\" title=\"Faster\"><img src=\"" + __webpack_require__(128) + "\"></a>\n        </div>\n      </div>\n    </div>\n    <div class=\"legend-explanation\">Use buttons for playback control</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Wilderness Crossings</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style='background:#08ff00;'></span> Wilderness Area</li>\n          <li><span class=\"legend-item\" style='background:#d0ff00;'></span> Potential Wilderness Area</li>\n        </ul>\n      </div>\n    </div>\n    <div style=\"margin: 4px;\"><input id=\"wildernessTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Hangout Areas</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\"><span><input id=\"hide-labels-option\" type=\"checkbox\"></span> Hide labels</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"boundary-legend-item\"></span> Hangout Area Boundary</li>\n        </ul>\n      </div>\n    </div>\n    <div style=\"margin: 4px;\"><input id=\"hangoutTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"60\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR7 Expedition Story Map</div>\n    <div class=\"legend-entry\"><span><input id=\"story-map-overlay\" type=\"checkbox\"></span> Display story map overlay</div>\n    <div style=\"margin: 4px;\"><input id=\"storymapTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Journey log</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <ul id=\"logEntries\" class=\"v-legend-items\">\n      </ul>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR-7 Information Links</div>\n    <div class=\"legend-entry\" style=\"text-align: center; margin-left: 4px;\">\n      <ul class=\"v-legend-items\">\n        <div class=\"hline\"></div>\n        <div>Oregon Wild</div>\n        <a href=\"http://www.oregonwild.org/wildlife/wolves/the-journey-of-or7\" target=\"_blank\">Don't Stop Believing: The Journey of Wolf OR-7</a><br>\n        <div class=\"hline\"></div>\n        <div>Oregon Department of Fish and Wildlife</div>\n        <a href=\"http://www.dfw.state.or.us/Wolves/index.asp\" target=\"_blank\">Wolves in Oregon</a><br>\n        <a href=\"https://www.flickr.com/photos/odfw/sets/72157623481759903/\" target=\"_blank\">Photos - Mammals: Canine; Wolves</a><br>\n        <a href=\"http://www.dfw.state.or.us/Wolves/Packs/Rogue.asp\" target=\"_blank\">Rogue Pack</a><br>\n        <div class=\"hline\"></div>\n        <div>California Department of Fish and Wildlife</div>\n        <a href=\"https://www.wildlife.ca.gov/Conservation/Mammals/Gray-Wolf/OR7-Story\" target=\"_blank\">OR-7 – A Lone Wolf's Story</a><br>\n        <div class=\"hline\"></div>\n        <div>Documentaries</div>\n        <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a><br>\n        <a href=\"https://www.or7themovie.com/\" target=\"_blank\">OR7 - The Journey</a>\n        <div class=\"hline\"></div>\n        <div>Books</div>\n        <a href=\"https://www.amazon.com/Journey-Amazing-7-Oregon-History/dp/1629013994\" target=\"_blank\">Journey: The Amazing Story of OR-7</a><br>\n        <a href=\"https://www.amazon.com/Journey-Based-True-Story-Famous/dp/1632170655\" target=\"_blank\">Journey: Based on the True Story of OR7</a>\n\n      </ul>\n    </div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Sources:\n    <a href=\"http://www.oregonwild.org/\" target=\"_blank\">Oregon Wild</a>,\n    <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a>\n  </div>\n</div>\n";
 },"useData":true});
 
 /***/ }),
