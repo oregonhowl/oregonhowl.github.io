@@ -15986,16 +15986,19 @@ function setupPlaybackControlActions(animationViewModel, clockViewModel) {
     $('#pb-play span').toggleClass('glyphicon-pause glyphicon-play');
     $('#pb-play span').toggleClass('blink');
     // animationViewModel.playForwardViewModel.command();
+    $(this).blur();
     return false;
   });
 
   $('#pb-faster').click(function () {
     speedUpAnimation(clockViewModel, 2);
+    $(this).blur();
     return false;
   });
 
   $('#pb-slower').click(function () {
     slowDownAnimation(clockViewModel, 2);
+    $(this).blur();
     return false;
   });
 
@@ -16003,12 +16006,14 @@ function setupPlaybackControlActions(animationViewModel, clockViewModel) {
     clockViewModel.currentTime = clockViewModel.startTime;
     setPlaybackPauseMode();
     //updateTimePeriodLabel(statsAll.fromYear);
+    $(this).blur();
     return false;
   });
 
   $('#pb-end').click(function () {
     clockViewModel.currentTime = clockViewModel.stopTime;
     setPlaybackPauseMode();
+    $(this).blur();
     return false;
   });
 }
@@ -30099,6 +30104,11 @@ function setup3dMap(viewName) {
 
   viewer.scene.fxaa = false;
 
+  // Globally disable entity tracking on double click
+  new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction(function () {
+    viewer.trackedEntity = undefined;
+  }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+
   viewer.terrainProvider = new Cesium.CesiumTerrainProvider({ url: 'https://assets.agi.com/stk-terrain/world' });
 
   populateLayerControl();
@@ -30824,6 +30834,13 @@ function setupView(viewer) {
             utils.setPlaybackPauseMode();
           }, false));
 
+          viewerCallbacks.push(_viewer.selectedEntityChanged.addEventListener(function (e) {
+            if (e && e.id.startsWith('or7journey-l')) {
+              _viewer.selectedEntity = undefined;
+              $('#or7FirstPhotoForId' + e.properties.Id.getValue()).click();
+            }
+          }));
+
           var isConstantSpeedOption = false;
           var isAccelerated = false;
           var lastDayNumber;
@@ -30963,27 +30980,29 @@ function setupView(viewer) {
 function setUpViewPhotos() {
   $('#viewPhotosContainer').html((0, _or7Photos2.default)());
 
-  $('.or7-photos-gallery').magnificPopup({
-    delegate: 'a',
-    type: 'image',
-    tLoading: 'Loading image #%curr%...',
-    mainClass: 'mfp-img-mobile',
-    gallery: {
-      enabled: true,
-      navigateByImgClick: true,
-      preload: [0, 1] // Will preload 0 - before current, and 1 after the current image
-    },
-    image: {
-      tError: '<a href="%url%">The image #%curr%</a> could not be loaded.',
-      titleSrc: function titleSrc(item) {
-        return item.el.attr('title') + '<small>' + item.el.attr('subtitle') + '<a class="home-button" href="' + item.el.attr('source') + '" target="_blank"> (image source)</a></small>';
+  $('.or7-photos-gallery').each(function () {
+    $(this).magnificPopup({
+      delegate: 'a',
+      type: 'image',
+      tLoading: 'Loading image #%curr%...',
+      mainClass: 'mfp-img-mobile',
+      gallery: {
+        enabled: true,
+        navigateByImgClick: true,
+        preload: [0, 1] // Will preload 0 - before current, and 1 after the current image
+      },
+      image: {
+        tError: '<a href="%url%">The image #%curr%</a> could not be loaded.',
+        titleSrc: function titleSrc(item) {
+          return item.el.attr('title') + '<small>' + item.el.attr('subtitle') + '<a class="home-button" href="' + item.el.attr('source') + '" target="_blank"> (image source)</a></small>';
+        }
       }
-    }
+    });
   });
 
   $('#viewPhotosControl').click(function () {
     $('#viewPhotosControl').blur();
-    $('#or7FirstPhoto').click();
+    $('#or7FirstPhotoForId7').click();
     return false;
   });
 
@@ -31124,8 +31143,8 @@ function makeCZMLforOR7(callback) {
   function LabelItem(id, prop) {
 
     this.id = 'or7journey-l-' + id;
-    this.properties = prop;
-    this.properties.doNotPick = true;
+    this.properties = { Id: prop.Id, areaType: prop.areaType };
+    //this.properties.doNotPick = false;
     this.position = { cartographicDegrees: [] };
     if (prop.entryDate) {
       this.availability = new Date(prop.entryDate).toISOString() + '/';
@@ -31768,10 +31787,6 @@ function firesShownCount(time) {
 }
 
 function setUpInfoBox() {
-  // Disable entity tracking on double click
-  new Cesium.ScreenSpaceEventHandler(_viewer.scene.canvas).setInputAction(function () {
-    _viewer.trackedEntity = undefined;
-  }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
   // Add selected entity listener to open/close info box
   viewerCallbacks.push(_viewer.selectedEntityChanged.addEventListener(function (e) {
@@ -51577,7 +51592,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 var Handlebars = __webpack_require__(7);
 function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj); }
 module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
-    return "<div class=\"or7-photos-gallery\">\n	<a id=\"or7FirstPhoto\" href=\"data/or7/or7photos/20140503.jpg\" title=\"OR-7 on May 3, 2014\" subtitle=\"U. S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/16674012963/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20140503a.jpg\" title=\"OR-7's mate (?) on May 3, 2014\" subtitle=\"U. S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/16674012853/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20140504.jpg\" title=\"OR-7's mate (?) on May 4, 2014\" subtitle=\"U. S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/17106489928/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20140602.jpg\" title=\"Two of OR-7’s pups on June 2, 2014\" subtitle=\"U.S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/17108051289/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20160608.jpg\" title=\"OR-7 on June 8, 2016\" subtitle=\"U.S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/28330683040/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20160712-1.jpg\" title=\"Rogue Pack Pups on July 12, 2016\" subtitle=\"U.S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/28536438391/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20160712-2.jpg\" title=\"Rogue Pack Pups on July 12, 2016\" subtitle=\"U.S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/27998141214/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20161023.jpg\" title=\"OR-7 on October 23, 2016\" subtitle=\"Oregon Department of Fish and Wildlife\" source=\"https://www.flickr.com/photos/odfw/30754760735/in/album-72157623481759903/\"></a>\n</div>\n";
+    return "<div class=\"or7-photos-gallery\">\n	<a id=\"or7FirstPhotoForId5\" href=\"data/or7/or7photos/skylakes_Wikipedia_FS.jpg\" title=\"Sky Lakes Wilderness\" subtitle=\"U. S. Forest Service\" source=\"https://en.wikipedia.org/wiki/Sky_Lakes_Wilderness\"></a>\n</div>\n<div class=\"or7-photos-gallery\">\n	<a id=\"or7FirstPhotoForId6\" href=\"data/or7/or7photos/lassenp_NPS.jpg\" title=\"Lassen Volcanic National Park\" subtitle=\"National Park Service\" source=\"https://www.nps.gov/media/photo/gallery.htm?id=C6DF2D43-155D-4519-3EFE85D35659611A\"></a>\n</div>\n<div class=\"or7-photos-gallery\">\n	<a id=\"or7FirstPhotoForId7\" href=\"data/or7/or7photos/20140503.jpg\" title=\"OR-7 on May 3, 2014\" subtitle=\"U. S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/16674012963/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20140503a.jpg\" title=\"OR-7's mate (?) on May 3, 2014\" subtitle=\"U. S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/16674012853/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20140504.jpg\" title=\"OR-7's mate (?) on May 4, 2014\" subtitle=\"U. S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/17106489928/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20140602.jpg\" title=\"Two of OR-7’s pups on June 2, 2014\" subtitle=\"U.S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/17108051289/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20160608.jpg\" title=\"OR-7 on June 8, 2016\" subtitle=\"U.S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/28330683040/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20160712-1.jpg\" title=\"Rogue Pack Pups on July 12, 2016\" subtitle=\"U.S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/28536438391/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20160712-2.jpg\" title=\"Rogue Pack Pups on July 12, 2016\" subtitle=\"U.S. Fish and Wildlife Service\" source=\"https://www.flickr.com/photos/odfw/27998141214/in/album-72157623481759903/\"></a>\n	<a href=\"data/or7/or7photos/20161023.jpg\" title=\"OR-7 on October 23, 2016\" subtitle=\"Oregon Department of Fish and Wildlife\" source=\"https://www.flickr.com/photos/odfw/30754760735/in/album-72157623481759903/\"></a>\n</div>\n";
 },"useData":true});
 
 /***/ }),
