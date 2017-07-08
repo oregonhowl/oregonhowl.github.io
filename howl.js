@@ -15573,7 +15573,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var config = exports.config = {
-  versionString: 'v0.4.0<sup>Beta</sup>',
+  versionString: 'v0.4.1<sup>Beta</sup>',
   resetViewTarget: {
     default: {
       destination: Cesium.Cartesian3.fromDegrees(-120.84, 39.44, 460000),
@@ -15999,14 +15999,6 @@ function setupPlaybackControlActions(animationViewModel, clockViewModel) {
     return false;
   });
 
-  // Spacebar toggles playback
-  $(document).off('keydown');
-  $(document).keydown(function (e) {
-    if (e.which === 32) {
-      $('#pb-play').click();
-    }
-  });
-
   $('#pb-faster').click(function () {
     speedUpAnimation(clockViewModel, 2);
     $(this).blur();
@@ -16032,6 +16024,33 @@ function setupPlaybackControlActions(animationViewModel, clockViewModel) {
     setPlaybackPauseMode();
     $(this).blur();
     return false;
+  });
+
+  // Keyboard events
+  $(document).off('keydown');
+  $(document).keydown(function (e) {
+    switch (e.which) {
+      case 32:
+        // Spacebar
+        $('#pb-play').click();
+        break;
+      case 37:
+        // Left arrow
+        $('#pb-start').click();
+        break;
+      case 38:
+        // Up arror
+        $('#pb-faster').click();
+        break;
+      case 39:
+        // Right arrow
+        $('#pb-end').click();
+        break;
+      case 40:
+        // Down arrow
+        $('#pb-slower').click();
+        break;
+    }
   });
 }
 
@@ -16065,6 +16084,7 @@ function setUpResetView(viewer, target) {
       viewer.camera.flyTo(_config.config.resetViewTarget.default);
     }
     $(this).blur();
+    $('#track-entity-option').prop('checked', false);
     return false;
   });
   $('#resetViewDown').click(function () {
@@ -16074,6 +16094,7 @@ function setUpResetView(viewer, target) {
       viewer.camera.flyTo({ destination: _config.config.resetViewTarget.lookDownDestinaton, orientation: { heading: 0, pitch: Cesium.Math.toRadians(-90), roll: 0 } });
     }
     $(this).blur();
+    $('#track-entity-option').prop('checked', false);
     return false;
   });
 }
@@ -30957,6 +30978,14 @@ function setupView(viewer) {
             isConstantSpeedOption = $(this).is(":checked");
           });
 
+          $('#track-entity-option').change(function () {
+            if ($(this).is(':checked')) {
+              viewer.trackedEntity = or7JourneyEntity;
+            } else {
+              viewer.trackedEntity = undefined;
+            }
+          });
+
           setUpViewPhotos();
 
           $('#viewLabel').html((0, _or7ViewLabel2.default)());
@@ -30995,8 +31024,6 @@ function setupView(viewer) {
             $('#storymapTransparency').change();
           }
         });
-
-        //_viewer.dataSources.add(dataSource)
       });
     });
   });
@@ -31083,6 +31110,9 @@ function makeCZMLforOR7(callback) {
     },
     properties: {
       doNotPick: true
+    },
+    viewFrom: {
+      cartesian: [0, -250000, 150000]
     }
   }, {
     id: 'or7entries',
@@ -51510,7 +51540,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 var Handlebars = __webpack_require__(7);
 function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj); }
 module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
-    return "<div class=\"modal-dialog\">\n  <div class=\"modal-content\">\n    <div class=\"modal-header\">\n      <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button>\n      <h2><img src=\"" + __webpack_require__(127) + "\" style=\"height: 70px\">Help</h2>\n    </div>\n    <div class=\"modal-body\">\n      <h4>To pan the view in the map area</h4>\n      <ul>\n        <li>Left-click and drag, or</li>\n        <li>Command-click and drag, or</li>\n        <li>Single finger drag gesture</li>\n      </ul>\n      <h4>To zoom the view in the map area</h4>\n      <ul>\n        <li>Right-click and drag, or</li>\n        <li>Mouse wheel scroll, or</li>\n        <li>Two finger pinch gesture</li>\n      </ul>\n      <h4>To rotate the view in the map area</h4>\n      <ul>\n        <li>Middle-click and drag, or</li>\n        <li>Control-click and drag, or</li>\n        <li>Two finger rotate gesture</li>\n      </ul>\n      <h4>Use the right side HOWL view panel to</h4>\n      <ul>\n        <li>See view legend</li>\n        <li>Select display options</li>\n        <li>Control timeline animation playback when available</li>\n      </ul>\n    </div> <!-- modal body -->\n  </div> <!-- modal content -->\n</div> <!-- modal dialog -->\n";
+    return "<div class=\"modal-dialog\">\n  <div class=\"modal-content\">\n    <div class=\"modal-header\">\n      <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button>\n      <h2><img src=\"" + __webpack_require__(127) + "\" style=\"height: 70px\">Help</h2>\n    </div>\n    <div class=\"modal-body\">\n      <h4>To pan the view in the map area</h4>\n      <ul>\n        <li>Left-click and drag, or</li>\n        <li>Command-click and drag, or</li>\n        <li>Single finger drag gesture</li>\n      </ul>\n      <h4>To zoom the view in the map area</h4>\n      <ul>\n        <li>Right-click and drag, or</li>\n        <li>Mouse wheel scroll, or</li>\n        <li>Two finger pinch gesture</li>\n      </ul>\n      <h4>To rotate the view in the map area</h4>\n      <ul>\n        <li>Middle-click and drag, or</li>\n        <li>Control-click and drag, or</li>\n        <li>Two finger rotate gesture</li>\n      </ul>\n      <h4>Use the right side HOWL view panel to</h4>\n      <ul>\n        <li>See view legend</li>\n        <li>Select display options</li>\n        <li>Control timeline animation playback when available</li>\n      </ul>\n      <h4>Animation playback keyboard control</h4>\n      <ul>\n        <li>Spacebar: toggle play/pause</li>\n        <li>Up/Down arrow: faster/slower</li>\n        <li>Left/Right arrow: start/end</li>\n      </ul>\n    </div>\n  </div>\n</div>\n";
 },"useData":true});
 
 /***/ }),
@@ -51598,7 +51628,7 @@ function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj);
 module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1;
 
-  return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><b>The Journey of Wolf OR-7</b></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Display Options</div>\n    <div class=\"legend-entry\"><span><input id=\"constant-speed-option\" type=\"checkbox\"></span> Keep animation speed constant</div>\n  </div>\n"
+  return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><b>The Journey of Wolf OR-7</b></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Display Options</div>\n    <div class=\"legend-entry\"><span><input id=\"constant-speed-option\" type=\"checkbox\"></span> Keep animation speed constant</div>\n    <div class=\"legend-entry\"><span><input id=\"track-entity-option\" type=\"checkbox\"></span> Make camera track OR-7</div>\n  </div>\n"
     + ((stack1 = container.invokePartial(__webpack_require__(128),depth0,{"name":"../playbackControl","data":data,"indent":"  ","helpers":helpers,"partials":partials,"decorators":container.decorators})) != null ? stack1 : "")
     + "  <div class=\"legend-box\">\n    <div class=\"legend-title\">Wilderness Crossings</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style='background:#06cc00;'></span> Wilderness Area</li>\n          <li><span class=\"legend-item\" style='background:#9550CF;'></span> Potential Wilderness Area</li>\n        </ul>\n      </div>\n    </div>\n    <div style=\"margin: 4px;\"><input id=\"wildernessTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Hangout Areas</div>\n    <div class=\"legend-entry\"><span><input id=\"hide-labels-option\" type=\"checkbox\"></span> Hide labels</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"boundary-legend-item\"></span> Hangout Area Boundary</li>\n        </ul>\n      </div>\n    </div>\n    <div style=\"margin: 4px;\"><input id=\"hangoutTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"60\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR7 Expedition Story Map</div>\n    <div class=\"legend-entry\"><span><input id=\"story-map-overlay\" type=\"checkbox\"></span> Display story map overlay</div>\n    <div style=\"margin: 4px;\"><input id=\"storymapTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Journey log</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <ul id=\"logEntries\" class=\"v-legend-items\">\n      </ul>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR-7 Information Links</div>\n    <div class=\"legend-entry\" style=\"text-align: center; margin-left: 4px;\">\n      <ul class=\"v-legend-items\">\n        <div class=\"hline\"></div>\n        <div>Oregon Wild</div>\n        <a href=\"http://www.oregonwild.org/wildlife/wolves/the-journey-of-or7\" target=\"_blank\">Don't Stop Believing: The Journey of Wolf OR-7</a><br>\n        <div class=\"hline\"></div>\n        <div>Oregon Department of Fish and Wildlife</div>\n        <a href=\"http://www.dfw.state.or.us/Wolves/index.asp\" target=\"_blank\">Wolves in Oregon</a><br>\n        <a href=\"https://www.flickr.com/photos/odfw/sets/72157623481759903/\" target=\"_blank\">Photos - Mammals: Canine; Wolves</a><br>\n        <a href=\"http://www.dfw.state.or.us/Wolves/Packs/Rogue.asp\" target=\"_blank\">Rogue Pack</a><br>\n        <div class=\"hline\"></div>\n        <div>California Department of Fish and Wildlife</div>\n        <a href=\"https://www.wildlife.ca.gov/Conservation/Mammals/Gray-Wolf/OR7-Story\" target=\"_blank\">OR-7 – A Lone Wolf's Story</a><br>\n        <div class=\"hline\"></div>\n        <div>Documentaries</div>\n        <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a><br>\n        <a href=\"https://www.or7themovie.com/\" target=\"_blank\">OR7 - The Journey</a>\n        <div class=\"hline\"></div>\n        <div>Books</div>\n        <a href=\"https://www.amazon.com/Journey-Amazing-7-Oregon-History/dp/1629013994\" target=\"_blank\">Journey: The Amazing Story of OR-7</a><br>\n        <a href=\"https://www.amazon.com/Journey-Based-True-Story-Famous/dp/1632170655\" target=\"_blank\">Journey: Based on the True Story of OR7</a>\n\n      </ul>\n    </div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Sources:\n    <a href=\"http://www.oregonwild.org/\" target=\"_blank\">Oregon Wild</a>,\n    <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a>\n  </div>\n</div>\n";
 },"usePartial":true,"useData":true});
