@@ -16033,6 +16033,7 @@ function setupPlaybackControlActions(animationViewModel, clockViewModel) {
       case 32:
         // Spacebar
         $('#pb-play').click();
+        e.preventDefault();
         break;
       case 37:
         // Left arrow
