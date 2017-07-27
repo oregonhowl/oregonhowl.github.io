@@ -16200,7 +16200,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var config = exports.config = {
-  versionString: 'v0.5.2<sup>Beta</sup>',
+  versionString: 'v0.6.0<sup>Beta</sup>',
   resetViewTarget: {
     default: {
       destination: Cesium.Cartesian3.fromDegrees(-120.84, 39.44, 460000),
@@ -18003,7 +18003,9 @@ var config = exports.config = {
     or7JourneyLog: 'data/or7/or7entriesF.json',
     or7AreasCrossed: 'data/or7/or7areascrossed.json',
     or7WolfModel: 'data/or7/model/wolf.gltf',
-    or7Photos: 'data/or7/or7photos/or7photos.json'
+    or7Photos: 'data/or7/or7photos/or7photos.json',
+    or7PublicLandsCrossed: 'data/or7/or7plcrossed.json',
+    or7PublicLandsCrossingsLog: 'data/or7/or7plcrossings.json'
   }
 };
 
@@ -30900,6 +30902,7 @@ var labelDateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
 var _viewer;
 var or7dataSource;
 var or7kmlDataSource;
+var or7plDataSource;
 var or7StoryMapLayer;
 var or7data;
 var clockViewModel;
@@ -30920,7 +30923,6 @@ function setupView(viewer) {
   clockViewModel = new Cesium.ClockViewModel(_viewer.clock);
   animationViewModel = new Cesium.AnimationViewModel(clockViewModel);
 
-  // TODO: localize and make MMM/YYYY
   _viewer.timeline.makeLabel = function (date) {
     var gregorianDate = Cesium.JulianDate.toGregorianDate(date);
     return gregorianDate.month + '/' + gregorianDate.year;
@@ -31097,6 +31099,41 @@ function setupView(viewer) {
           }
         });
       });
+    });
+  });
+
+  // Add public land crossings data source
+  data.getJSONData(_or7Config.config.dataPaths.or7PublicLandsCrossingsLog, function (plx) {
+    Cesium.GeoJsonDataSource.load(_or7Config.config.dataPaths.or7PublicLandsCrossed, { clampToGround: true }).then(function (ds) {
+      or7plDataSource = ds;
+      or7plDataSource.entities.values.forEach(function (entity) {
+        if (!entity.position && entity.polygon) {
+          var pos = entity.polygon.hierarchy.getValue().positions;
+          var center = Cesium.BoundingSphere.fromPoints(pos).center;
+          entity.position = new Cesium.ConstantPositionProperty(center);
+
+          var timeInterval = new Cesium.TimeInterval({
+            start: Cesium.JulianDate.fromIso8601(new Date(plx[entity.properties.id.getValue()]).toISOString()),
+            stop: Cesium.JulianDate.fromIso8601(new Date().toISOString())
+          });
+
+          entity.availability = new Cesium.TimeIntervalCollection();
+          entity.availability.addInterval(timeInterval);
+        }
+      });
+
+      $('#plTransparency').change(function () {
+        var t = $(this).val() / 100;
+        or7plDataSource.entities.values.forEach(function (entity) {
+          if (entity.polygon) {
+            entity.polygon.material = entity.polygon.material.color.getValue().withAlpha(t);
+          }
+        });
+        $('#wildernessTransparency').change(); // I have to do this to keep pl layer in the back
+      });
+      $('#plTransparency').change();
+
+      _viewer.dataSources.add(or7plDataSource);
     });
   });
 }
@@ -31329,7 +31366,7 @@ function makeCZMLforOR7(callback) {
       var toDate = new Date(entries.features[entries.features.length - 1].properties.entryDate).toISOString();
       or7CZML[0].clock.interval = fromDate + '/' + toDate;
       or7CZML[1].availability = or7CZML[0].clock.interval;
-      or7CZML[0].clock.currentTime = fromDate;
+      or7CZML[0].clock.currentTime = toDate;
 
       initStats(fromDate, toDate);
 
@@ -31552,6 +31589,7 @@ function wipeoutView() {
 
   _viewer.dataSources.remove(or7dataSource, true);
   _viewer.dataSources.remove(or7kmlDataSource, true);
+  _viewer.dataSources.remove(or7plDataSource, true);
   _viewer.imageryLayers.remove(or7StoryMapLayer);
 
   or7data = or7dataSource = or7kmlDataSource = or7StoryMapLayer = statsAll = undefined;
@@ -51761,7 +51799,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
 
   return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><b>The Journey of Wolf OR-7</b></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Display Options</div>\n    <div class=\"legend-entry\"><span><input id=\"constant-speed-option\" type=\"checkbox\"></span> Keep animation speed constant</div>\n    <div class=\"legend-entry\"><span><input id=\"track-entity-option\" type=\"checkbox\"></span> Make camera track OR-7</div>\n  </div>\n"
     + ((stack1 = container.invokePartial(__webpack_require__(131),depth0,{"name":"../../../templates/playbackControl","data":data,"indent":"  ","helpers":helpers,"partials":partials,"decorators":container.decorators})) != null ? stack1 : "")
-    + "  <div class=\"legend-box\">\n    <div class=\"legend-title\">Wilderness Crossings</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style='background:#073C08;'></span> Wilderness Area</li>\n          <li><span class=\"legend-item\" style='background:#B52797;'></span> Potential Wilderness Area</li>\n        </ul>\n      </div>\n    </div>\n    <div style=\"margin: 4px;\"><input id=\"wildernessTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Hangout Areas</div>\n    <div class=\"legend-entry\"><span><input id=\"hide-labels-option\" type=\"checkbox\"></span> Hide labels</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"boundary-legend-item\"></span> Hangout Area Boundary</li>\n        </ul>\n      </div>\n    </div>\n    <div style=\"margin: 4px;\"><input id=\"hangoutTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"60\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR7 Expedition Story Map</div>\n    <div class=\"legend-entry\"><span><input id=\"story-map-overlay\" type=\"checkbox\"></span> Display story map overlay</div>\n    <div style=\"margin: 4px;\"><input id=\"storymapTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Journey log</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <ul id=\"logEntries\" class=\"v-legend-items\">\n      </ul>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR-7 Information Links</div>\n    <div class=\"legend-entry\" style=\"text-align: center; margin-left: 4px;\">\n      <ul class=\"v-legend-items\">\n        <div class=\"hline\"></div>\n        <div>Oregon Wild</div>\n        <a href=\"http://www.oregonwild.org/wildlife/wolves/the-journey-of-or7\" target=\"_blank\">Don't Stop Believing: The Journey of Wolf OR-7</a><br>\n        <div class=\"hline\"></div>\n        <div>Oregon Department of Fish and Wildlife</div>\n        <a href=\"http://www.dfw.state.or.us/Wolves/index.asp\" target=\"_blank\">Wolves in Oregon</a><br>\n        <a href=\"https://www.flickr.com/photos/odfw/sets/72157623481759903/\" target=\"_blank\">Photos - Mammals: Canine; Wolves</a><br>\n        <a href=\"http://www.dfw.state.or.us/Wolves/Packs/Rogue.asp\" target=\"_blank\">Rogue Pack</a><br>\n        <div class=\"hline\"></div>\n        <div>California Department of Fish and Wildlife</div>\n        <a href=\"https://www.wildlife.ca.gov/Conservation/Mammals/Gray-Wolf/OR7-Story\" target=\"_blank\">OR-7 – A Lone Wolf's Story</a><br>\n        <div class=\"hline\"></div>\n        <div>Documentaries</div>\n        <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a><br>\n        <a href=\"https://www.or7themovie.com/\" target=\"_blank\">OR7 - The Journey</a>\n        <div class=\"hline\"></div>\n        <div>Books</div>\n        <a href=\"https://www.amazon.com/Journey-Amazing-7-Oregon-History/dp/1629013994\" target=\"_blank\">Journey: The Amazing Story of OR-7</a><br>\n        <a href=\"https://www.amazon.com/Journey-Based-True-Story-Famous/dp/1632170655\" target=\"_blank\">Journey: Based on the True Story of OR7</a>\n\n      </ul>\n    </div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Sources:\n    <a href=\"http://www.oregonwild.org/\" target=\"_blank\">Oregon Wild</a>,\n    <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a>\n  </div>\n</div>\n";
+    + "  <div class=\"legend-box\">\n    <div class=\"legend-title\">Wilderness Crossings</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style='background:#073C08;'></span> Wilderness Area</li>\n          <li><span class=\"legend-item\" style='background:#B52797;'></span> Potential Wilderness Area</li>\n        </ul>\n      </div>\n    </div>\n    <div style=\"margin: 4px;\"><input id=\"wildernessTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Public Land Crossings</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"legend-item\" style='background:#50ACCF;'></span> National Forest</li>\n          <li><span class=\"legend-item\" style='background:#CF7350;'></span> Bureau of Land Management</li>\n        </ul>\n      </div>\n    </div>\n    <div style=\"margin: 4px;\"><input id=\"plTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Hangout Areas</div>\n    <div class=\"legend-entry\"><span><input id=\"hide-labels-option\" type=\"checkbox\"></span> Hide labels</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 10px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n          <li><span class=\"boundary-legend-item\"></span> Hangout Area Boundary</li>\n        </ul>\n      </div>\n    </div>\n    <div style=\"margin: 4px;\"><input id=\"hangoutTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"60\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR7 Expedition Story Map</div>\n    <div class=\"legend-entry\"><span><input id=\"story-map-overlay\" type=\"checkbox\"></span> Display story map overlay</div>\n    <div style=\"margin: 4px;\"><input id=\"storymapTransparency\" type=\"range\" min=\"0\" max=\"100\" value=\"80\" /></div>\n    <div class=\"legend-explanation\">Move the slider to adjust transparency</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Journey log</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <ul id=\"logEntries\" class=\"v-legend-items\">\n      </ul>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">OR-7 Information Links</div>\n    <div class=\"legend-entry\" style=\"text-align: center; margin-left: 4px;\">\n      <ul class=\"v-legend-items\">\n        <div class=\"hline\"></div>\n        <div>Oregon Wild</div>\n        <a href=\"http://www.oregonwild.org/wildlife/wolves/the-journey-of-or7\" target=\"_blank\">Don't Stop Believing: The Journey of Wolf OR-7</a><br>\n        <div class=\"hline\"></div>\n        <div>Oregon Department of Fish and Wildlife</div>\n        <a href=\"http://www.dfw.state.or.us/Wolves/index.asp\" target=\"_blank\">Wolves in Oregon</a><br>\n        <a href=\"https://www.flickr.com/photos/odfw/sets/72157623481759903/\" target=\"_blank\">Photos - Mammals: Canine; Wolves</a><br>\n        <a href=\"http://www.dfw.state.or.us/Wolves/Packs/Rogue.asp\" target=\"_blank\">Rogue Pack</a><br>\n        <div class=\"hline\"></div>\n        <div>California Department of Fish and Wildlife</div>\n        <a href=\"https://www.wildlife.ca.gov/Conservation/Mammals/Gray-Wolf/OR7-Story\" target=\"_blank\">OR-7 – A Lone Wolf's Story</a><br>\n        <div class=\"hline\"></div>\n        <div>Documentaries</div>\n        <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a><br>\n        <a href=\"https://www.or7themovie.com/\" target=\"_blank\">OR7 - The Journey</a>\n        <div class=\"hline\"></div>\n        <div>Books</div>\n        <a href=\"https://www.amazon.com/Journey-Amazing-7-Oregon-History/dp/1629013994\" target=\"_blank\">Journey: The Amazing Story of OR-7</a><br>\n        <a href=\"https://www.amazon.com/Journey-Based-True-Story-Famous/dp/1632170655\" target=\"_blank\">Journey: Based on the True Story of OR7</a>\n\n      </ul>\n    </div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Sources:\n    <a href=\"http://www.oregonwild.org/\" target=\"_blank\">Oregon Wild</a>,\n    <a href=\"http://or7expedition.org/\" target=\"_blank\">Wolf OR-7 Expedition</a>\n  </div>\n</div>\n";
 },"usePartial":true,"useData":true});
 
 /***/ }),
