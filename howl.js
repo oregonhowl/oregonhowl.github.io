@@ -16200,7 +16200,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var config = exports.config = {
-  versionString: 'v0.6.0<sup>Beta</sup>',
+  versionString: 'v0.6.1<sup>Beta</sup>',
   resetViewTarget: {
     default: {
       destination: Cesium.Cartesian3.fromDegrees(-120.84, 39.44, 460000),
@@ -16274,7 +16274,15 @@ var config = exports.config = {
     name: 'Potential Forest Wilderness Areas',
     alpha: 0.9,
     legendSpan: '<span class="overlay-legend-item-gstripes"></span>'
-  }]
+  }],
+  dataPaths: {
+    stateBoundary: 'data/oregon/oregonl.json'
+  },
+  stateBoundaryOpts: {
+    strokeWidth: 2000,
+    strokeColor: '#1A1A1A',
+    strokeOpacity: 0.7
+  }
 };
 
 /***/ }),
@@ -30311,6 +30319,7 @@ function populateLayerControl() {
     overlayImageryProviders: _config.config.overlayImageryProviders
   }));
 
+  // Basemaps
   $('#basemap-layer-control').change(function () {
     var selectedLayer = $('#basemap-layer:checked').val();
     viewer.imageryLayers.remove(viewer.imageryLayers.get(0));
@@ -30318,6 +30327,19 @@ function populateLayerControl() {
     viewer.imageryLayers.lowerToBottom(layer); // Base layer always at bottom
   });
 
+  // State boundary
+  Cesium.GeoJsonDataSource.load(_config.config.dataPaths.stateBoundary, {
+    clampToGround: true,
+    strokeWidth: _config.config.stateBoundaryOpts.strokeWidth,
+    stroke: Cesium.Color.fromCssColorString(_config.config.stateBoundaryOpts.strokeColor).withAlpha(_config.config.stateBoundaryOpts.strokeOpacity)
+  }).then(function (ds) {
+    $('#state-layer-control').change(function () {
+      ds.show = $('#state-boundary-layer').is(':checked');
+    });
+    viewer.dataSources.add(ds);
+  });
+
+  // Layer overlays
   var overlayLayers = [];
   _config.config.overlayImageryProviders.forEach(function (overlayImageryProvider) {
     var oLayer = viewer.imageryLayers.addImageryProvider(overlayImageryProvider.provider);
@@ -31754,7 +31776,9 @@ function setupView(viewer) {
           var clockYear = Cesium.JulianDate.toIso8601(event.currentTime).substr(0, 4);
           if (year !== clockYear) {
             year = clockYear;
-            $('#viewLabel').show();
+            if (!fireItems) {
+              $('#viewLabel').show();
+            }
             $('#showingYear').text(year);
             updateNumberOfFiresLabel(firesShownCount(event.currentTime));
             updateTimePeriodLabel(year);
@@ -51621,7 +51645,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 
   return "        <label><input id=\"overlay-layer\" value=\""
     + alias1(((helper = (helper = helpers.index || (data && data.index)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : {},{"name":"index","hash":{},"data":data}) : helper)))
-    + "\" type=\"checkbox\" class=\"leaflet-control-layers-selector\" name=\"leaflet-base-layers\">\n        <span> "
+    + "\" type=\"checkbox\" class=\"leaflet-control-layers-selector\">\n        <span> "
     + alias1(alias2((depth0 != null ? depth0.name : depth0), depth0))
     + " </span>"
     + ((stack1 = alias2((depth0 != null ? depth0.legendSpan : depth0), depth0)) != null ? stack1 : "")
@@ -51631,7 +51655,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 
   return "<a class=\"leaflet-control-layers-toggle\" href=\"#\"></a>\n<form class=\"leaflet-control-layers-list\">\n  <div id=\"basemap-layer-control\" class=\"leaflet-control-layers-base\">\n"
     + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.imageryProviders : depth0),{"name":"each","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
-    + "  </div>\n  <div id=\"overlay-layer-control\">\n    <div class=\"leaflet-control-layers-separator\"></div>\n    <div class=\"leaflet-control-layers-overlays\">\n"
+    + "  </div>\n  <div id=\"state-layer-control\">\n    <div class=\"leaflet-control-layers-separator\"></div>\n    <div class=\"leaflet-control-layers-overlays\">\n        <label><input id=\"state-boundary-layer\" type=\"checkbox\" checked class=\"leaflet-control-layers-selector\">\n        <span> State boundary </span>\n        </label>\n    </div>\n  </div>\n  <div id=\"overlay-layer-control\">\n    <div class=\"leaflet-control-layers-separator\"></div>\n    <div class=\"leaflet-control-layers-overlays\">\n"
     + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.overlayImageryProviders : depth0),{"name":"each","hash":{},"fn":container.program(4, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "    </div>\n  </div>\n</form>\n";
 },"useData":true});
@@ -51915,7 +51939,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
     + alias2(alias1((depth0 != null ? depth0.toYear : depth0), depth0))
     + "</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Display Options</div>\n    <div class=\"legend-entry\"><span><input id=\"non-forest-option\" type=\"checkbox\"></span> Show non-forest (e.g., shrubland) fires</div>\n    <div class=\"legend-entry\"><span><input id=\"cumulative-option\" type=\"checkbox\"></span> Show cumulative fire events</div>\n  </div>\n"
     + ((stack1 = container.invokePartial(__webpack_require__(131),depth0,{"name":"../../../templates/playbackControl","data":data,"indent":"  ","helpers":helpers,"partials":partials,"decorators":container.decorators})) != null ? stack1 : "")
-    + "  <div class=\"legend-box\">\n    <div class=\"legend-title\">Predominant Burn Severity</div>\n    <div class=\"legend-scale\">\n      <ul class=\"legend-items\">\n        <li><span style='background:#FF0000;'></span>High</li>\n        <li><span style='background:#FFFF00;'></span>Moderate</li>\n        <li><span style='background:#79FFD3;'></span>Low</li>\n      </ul>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Area of Fire Boundary</div>\n    <div class=\"legend-scale\">\n      <ul>\n        <li><span class='lbox' style='width: 10px; height: 10px; border-radius: 5px'></span><br>Small</li>\n        <li><span class='lbox' style='width: 20px; height: 20px; border-radius: 10px'></span><br>Med</li>\n        <li><span class='lbox' style='width: 30px; height: 30px; border-radius: 15px'></span><br>Large</li>\n      </ul>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">High Severity Area</div>\n    <div class=\"legend-scale\">\n      <ul>\n        <li><span class='scyl' style='width: 30px; height: 20px;'></span><br>Small</li>\n        <li><span class='mcyl' style='width: 30px; height: 30px;'></span><br>Med</li>\n        <li><span class='lcyl' style='width: 30px; height: 50px;'></span><br>Large</li>\n      </ul>\n    </div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Source: <a href=\"http://www.mtbs.gov/\" target=\"_blank\">MTBS</a></div>\n</div>\n";
+    + "  <div class=\"legend-box\">\n    <div class=\"legend-title\">Predominant Burn Severity</div>\n    <div class=\"legend-scale\">\n      <ul class=\"legend-items\">\n        <li><span style='background:#FF0000;'></span>High</li>\n        <li><span style='background:#FFFF00;'></span>Moderate</li>\n        <li><span style='background:#79FFD3;'></span>Low</li>\n      </ul>\n    </div>\n    <div class=\"legend-explanation\">Color corresponds with largest burn severity assessment area</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Area of Fire Boundary</div>\n    <div class=\"legend-scale\">\n      <ul>\n        <li><span class='lbox' style='width: 10px; height: 10px; border-radius: 5px'></span><br>Small</li>\n        <li><span class='lbox' style='width: 20px; height: 20px; border-radius: 10px'></span><br>Med</li>\n        <li><span class='lbox' style='width: 30px; height: 30px; border-radius: 15px'></span><br>Large</li>\n      </ul>\n    </div>\n    <div class=\"legend-explanation\">Cylinder base area is proportional to fire boundary acreage</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">High Severity Area</div>\n    <div class=\"legend-scale\">\n      <ul>\n        <li><span class='scyl' style='width: 30px; height: 20px;'></span><br>Small</li>\n        <li><span class='mcyl' style='width: 30px; height: 30px;'></span><br>Med</li>\n        <li><span class='lcyl' style='width: 30px; height: 50px;'></span><br>Large</li>\n      </ul>\n    </div>\n    <div class=\"legend-explanation\">Cylinder height is proportional to high burn severity acreage</div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Source: <a href=\"http://www.mtbs.gov/\" target=\"_blank\">MTBS</a></div>\n</div>\n";
 },"usePartial":true,"useData":true});
 
 /***/ }),
