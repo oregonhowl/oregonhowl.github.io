@@ -16200,7 +16200,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var config = exports.config = {
-  versionString: 'v0.6.1<sup>Beta</sup>',
+  versionString: 'v0.6.2<sup>Beta</sup>',
   resetViewTarget: {
     default: {
       destination: Cesium.Cartesian3.fromDegrees(-120.84, 39.44, 460000),
@@ -30925,6 +30925,7 @@ var _viewer;
 var or7dataSource;
 var or7kmlDataSource;
 var or7plDataSource;
+var or7wDataSource;
 var or7StoryMapLayer;
 var or7data;
 var clockViewModel;
@@ -30963,7 +30964,7 @@ function setupView(viewer) {
   data.getJSONData(_or7Config.config.dataPaths.or7, function (data) {
     or7data = data;
 
-    plCrossings(function () {
+    wplCrossings(function () {
       makeCZMLforOR7(function (or7CZML) {
 
         Cesium.CzmlDataSource.load(or7CZML).then(function (dataSource) {
@@ -31044,16 +31045,6 @@ function setupView(viewer) {
             });
             $('#hangoutTransparency').change();
 
-            $('#wildernessTransparency').change(function () {
-              var t = $(this).val() / 100;
-              or7dataSource.entities.values.forEach(function (entity) {
-                if (entity.polygon && entity.properties.getValue().areaType === 'wilderness') {
-                  entity.polygon.material = entity.polygon.material.color.getValue().withAlpha(t);
-                }
-              });
-            });
-            $('#wildernessTransparency').change();
-
             $('#hide-labels-option').change(function () {
               var hideLabels = $(this).is(":checked");
               or7dataSource.entities.values.forEach(function (entity) {
@@ -31131,24 +31122,16 @@ function adjustCorridorWidth(or7CZML) {
   });
 }
 
-function plCrossings(callback) {
-  // Add public land crossings data source
+function wplCrossings(callback) {
+
+  // Add wilderness and public land crossings data sources in order to ensure zindex
   data.getJSONData(_or7Config.config.dataPaths.or7PublicLandsCrossingsLog, function (plx) {
     Cesium.GeoJsonDataSource.load(_or7Config.config.dataPaths.or7PublicLandsCrossed, { clampToGround: true }).then(function (ds) {
       or7plDataSource = ds;
       or7plDataSource.entities.values.forEach(function (entity) {
         if (!entity.position && entity.polygon) {
-          var pos = entity.polygon.hierarchy.getValue().positions;
-          var center = Cesium.BoundingSphere.fromPoints(pos).center;
-          entity.position = new Cesium.ConstantPositionProperty(center);
-
-          var timeInterval = new Cesium.TimeInterval({
-            start: Cesium.JulianDate.fromIso8601(new Date(plx[entity.properties.id.getValue()]).toISOString()),
-            stop: Cesium.JulianDate.fromIso8601(new Date().toISOString())
-          });
-
-          entity.availability = new Cesium.TimeIntervalCollection();
-          entity.availability.addInterval(timeInterval);
+          addPolygonPosition(entity);
+          addAvailability(entity, plx[entity.properties.id.getValue()]);
         }
       });
 
@@ -31160,13 +31143,55 @@ function plCrossings(callback) {
           }
         });
         $('#wildernessTransparency').change(); // I have to do this to keep pl layer in the back
+        recolorPath(); // And this brings back the path to the front
       });
-      $('#plTransparency').change();
 
       _viewer.dataSources.add(or7plDataSource);
+
+      Cesium.GeoJsonDataSource.load(_or7Config.config.dataPaths.or7AreasCrossed, { clampToGround: true }).then(function (ds) {
+        or7wDataSource = ds;
+        or7wDataSource.entities.values.forEach(function (entity) {
+          addPolygonPosition(entity);
+          addAvailability(entity, entity.properties.entryDate.getValue());
+        });
+        $('#wildernessTransparency').change(function () {
+          var t = $(this).val() / 100;
+          or7wDataSource.entities.values.forEach(function (entity) {
+            if (entity.polygon) {
+              entity.polygon.material = entity.polygon.material.color.getValue().withAlpha(t);
+            }
+          });
+          recolorPath(); // And this brings back the path to the front
+        });
+
+        _viewer.dataSources.add(or7wDataSource);
+        callback();
+      });
     });
-    callback();
   });
+}
+
+function recolorPath() {
+  or7dataSource.entities.values.forEach(function (entity) {
+    if (entity.corridor) {
+      entity.corridor.material = entity.corridor.material.color.getValue();
+    }
+  });
+}
+
+function addAvailability(entity, startDate) {
+  var timeInterval = new Cesium.TimeInterval({
+    start: Cesium.JulianDate.fromIso8601(new Date(startDate).toISOString()),
+    stop: Cesium.JulianDate.fromIso8601(new Date().toISOString())
+  });
+  entity.availability = new Cesium.TimeIntervalCollection();
+  entity.availability.addInterval(timeInterval);
+}
+
+function addPolygonPosition(entity) {
+  var pos = entity.polygon.hierarchy.getValue().positions;
+  var center = Cesium.BoundingSphere.fromPoints(pos).center;
+  entity.position = new Cesium.ConstantPositionProperty(center);
 }
 
 function setUpViewPhotos() {
@@ -31287,33 +31312,6 @@ function makeCZMLforOR7(callback) {
     };
   }
 
-  function PolygonItem(id, prop) {
-
-    this.id = 'or7journey-p-' + id;
-    this.properties = prop;
-    this.position = { cartographicDegrees: [] };
-    if (prop.entryDate) {
-      this.availability = new Date(prop.entryDate).toISOString() + '/';
-      if (prop.exitDate) {
-        this.availability += new Date(prop.exitDate).toISOString();
-      } else {
-        this.availability += new Date().toISOString();
-      }
-    }
-    this.polygon = {
-      positions: {
-        cartographicDegrees: []
-      },
-      material: {
-        solidColor: {
-          color: {
-            rgba: getColor(prop)
-          }
-        }
-      }
-    };
-  }
-
   function PolygonOutlineItem(id, prop) {
 
     this.id = 'or7journey-o-' + id;
@@ -31392,138 +31390,122 @@ function makeCZMLforOR7(callback) {
   }
 
   data.getJSONData(_or7Config.config.dataPaths.or7JourneyLog, function (entries) {
-    data.getJSONData(_or7Config.config.dataPaths.or7AreasCrossed, function (xareas) {
 
-      // Assumption: first entry matches first coordinate and last entry matches last coordinate
-      var fromDate = new Date(entries.features[0].properties.entryDate).toISOString();
-      var toDate = new Date(entries.features[entries.features.length - 1].properties.entryDate).toISOString();
-      or7CZML[0].clock.interval = fromDate + '/' + toDate;
-      or7Journey.availability = or7CZML[0].clock.interval;
-      or7CZML[0].clock.currentTime = toDate;
+    // Assumption: first entry matches first coordinate and last entry matches last coordinate
+    var fromDate = new Date(entries.features[0].properties.entryDate).toISOString();
+    var toDate = new Date(entries.features[entries.features.length - 1].properties.entryDate).toISOString();
+    or7CZML[0].clock.interval = fromDate + '/' + toDate;
+    or7Journey.availability = or7CZML[0].clock.interval;
+    or7CZML[0].clock.currentTime = toDate;
 
-      initStats(fromDate, toDate);
+    initStats(fromDate, toDate);
 
-      var logEntries = [];
-      for (var i = 0; i < entries.features.length; i++) {
-        if (i > 0) {
-          // Compute segment durations
-          durations.push(calcDuration(entries.features[i].properties.entryDate, entries.features[i - 1].properties.entryDate));
-        }
-        // Update czml custom properties
-        var d1 = new Date(entries.features[i].properties.entryDate).toISOString();
-        var d2 = i === entries.features.length - 1 ? d1 : new Date(entries.features[i + 1].properties.entryDate).toISOString();
-        d2 = d2.substr(0, d2.lastIndexOf('T'));
-        or7CZML[1].properties.entries.push({
-          interval: d1 + '/' + d2,
-          string: entries.features[i].properties.entryInfo
-        });
-        or7CZML[1].properties.speedUp.push({
-          interval: d1 + '/' + d2,
-          boolean: entries.features[i].properties.speedUp ? true : false
-        });
-        // Update entry log info for panel
-        logEntries.push({
-          date: new Date(entries.features[i].properties.entryDate).toLocaleDateString('en-US', labelDateOptions),
-          info: entries.features[i].properties.entryInfo
+    var logEntries = [];
+    for (var i = 0; i < entries.features.length; i++) {
+      if (i > 0) {
+        // Compute segment durations
+        durations.push(calcDuration(entries.features[i].properties.entryDate, entries.features[i - 1].properties.entryDate));
+      }
+      // Update czml custom properties
+      var d1 = new Date(entries.features[i].properties.entryDate).toISOString();
+      var d2 = i === entries.features.length - 1 ? d1 : new Date(entries.features[i + 1].properties.entryDate).toISOString();
+      d2 = d2.substr(0, d2.lastIndexOf('T'));
+      or7CZML[1].properties.entries.push({
+        interval: d1 + '/' + d2,
+        string: entries.features[i].properties.entryInfo
+      });
+      or7CZML[1].properties.speedUp.push({
+        interval: d1 + '/' + d2,
+        boolean: entries.features[i].properties.speedUp ? true : false
+      });
+      // Update entry log info for panel
+      logEntries.push({
+        date: new Date(entries.features[i].properties.entryDate).toLocaleDateString('en-US', labelDateOptions),
+        info: entries.features[i].properties.entryInfo
+      });
+    }
+    $('#logEntries').html((0, _or7LogEntries2.default)({ logEntries: logEntries }));
+
+    // Calculate leg distances
+    var distances = new Array(durations.length).fill(0);
+    var entryIndex = 0;
+    or7data.features.forEach(function (or7f) {
+      if (or7f.geometry.type === 'LineString') {
+        or7f.geometry.coordinates.forEach(function (or7Coord) {
+          if (isSameCoordinates(or7Coord, entries.features[entryIndex].geometry.coordinates)) {
+            entryIndex++;
+          } else {
+            distances[entryIndex] += calcDistance(prevCoord, or7Coord);
+          }
+          prevCoord = or7Coord;
         });
       }
-      $('#logEntries').html((0, _or7LogEntries2.default)({ logEntries: logEntries }));
-
-      // Calculate leg distances
-      var distances = new Array(durations.length).fill(0);
-      var entryIndex = 0;
-      or7data.features.forEach(function (or7f) {
-        if (or7f.geometry.type === 'LineString') {
-          or7f.geometry.coordinates.forEach(function (or7Coord) {
-            if (isSameCoordinates(or7Coord, entries.features[entryIndex].geometry.coordinates)) {
-              entryIndex++;
-            } else {
-              distances[entryIndex] += calcDistance(prevCoord, or7Coord);
-            }
-            prevCoord = or7Coord;
-          });
-        }
-      });
-
-      // Interpolate time
-      var sumD = 0;
-      var cumD = 0;
-      entryIndex = 0;
-      var itemId = 0;
-
-      xareas.features.forEach(function (xarea) {
-        // Add polygons for crossing areas
-        if (xarea.geometry.type === 'Polygon') {
-          var polygonItem = new PolygonItem(itemId++, xarea.properties);
-          polygonItem.position.cartographicDegrees.push(xarea.geometry.coordinates[0][0][0], xarea.geometry.coordinates[0][0][1], 0);
-          xarea.geometry.coordinates[0].forEach(function (xareaCoord) {
-            polygonItem.polygon.positions.cartographicDegrees.push(xareaCoord[0]);
-            polygonItem.polygon.positions.cartographicDegrees.push(xareaCoord[1]);
-            polygonItem.polygon.positions.cartographicDegrees.push(0);
-          });
-          or7CZML.push(polygonItem);
-        }
-      });
-
-      or7data.features.forEach(function (or7f) {
-
-        // Add journey entities
-        if (or7f.geometry.type === 'LineString') {
-          var corridorItem = new CorridorItem(itemId++, or7f.properties);
-          var corridorOutlineItem = new CorridorItem(itemId++, or7f.properties, '#8D6E27');
-          corridorItem.position.cartographicDegrees.push(or7f.geometry.coordinates[0][0], or7f.geometry.coordinates[0][1], or7f.geometry.coordinates[0][2]);
-          or7f.geometry.coordinates.forEach(function (or7Coord) {
-            var iDate;
-            if (isSameCoordinates(or7Coord, entries.features[entryIndex].geometry.coordinates)) {
-              iDate = new Date(entries.features[entryIndex].properties.entryDate).toISOString();
-              or7Journey.position.cartographicDegrees.push(iDate);
-              sumD = 0;
-              //prevCoord = or7Coord;
-              entryIndex++;
-            } else {
-              //var distance = calcDistance(prevCoord, or7Coord);
-              sumD += calcDistance(prevCoord, or7Coord);
-              //cumD += distance;
-              var ratio = sumD / distances[entryIndex];
-              iDate = new Date(Date.parse(entries.features[entryIndex - 1].properties.entryDate) + ratio * durations[entryIndex]).toISOString();
-              or7Journey.position.cartographicDegrees.push(iDate);
-            }
-            cumD += calcDistance(prevCoord, or7Coord);
-            updateStats(iDate, cumD, or7Coord[2]);
-            prevCoord = or7Coord;
-            or7Journey.position.cartographicDegrees.push(or7Coord[0]);
-            or7Journey.position.cartographicDegrees.push(or7Coord[1]);
-            or7Journey.position.cartographicDegrees.push(0);
-            corridorItem.corridor.positions.cartographicDegrees.push(or7Coord[0]);
-            corridorItem.corridor.positions.cartographicDegrees.push(or7Coord[1]);
-            corridorItem.corridor.positions.cartographicDegrees.push(0);
-            corridorOutlineItem.corridor.positions.cartographicDegrees.push(or7Coord[0]);
-            corridorOutlineItem.corridor.positions.cartographicDegrees.push(or7Coord[1]);
-            corridorOutlineItem.corridor.positions.cartographicDegrees.push(0);
-          });
-          or7CZML.push(corridorOutlineItem);
-          or7CZML.push(corridorItem);
-        }
-        if (or7f.geometry.type === 'Polygon') {
-          var polygonOutlineItem = new PolygonOutlineItem(itemId++, or7f.properties);
-          var labelItem = new LabelItem(itemId++, or7f.properties);
-          polygonOutlineItem.position.cartographicDegrees.push(or7f.geometry.coordinates[0][0][0], or7f.geometry.coordinates[0][0][1], or7f.geometry.coordinates[0][0][2]);
-          labelItem.position.cartographicDegrees.push(or7f.geometry.coordinates[0][0][0], or7f.geometry.coordinates[0][0][1], or7f.geometry.coordinates[0][0][2]);
-          or7f.geometry.coordinates[0].forEach(function (or7Coord) {
-            polygonOutlineItem.corridor.positions.cartographicDegrees.push(or7Coord[0]);
-            polygonOutlineItem.corridor.positions.cartographicDegrees.push(or7Coord[1]);
-            polygonOutlineItem.corridor.positions.cartographicDegrees.push(0);
-          });
-          or7CZML.push(polygonOutlineItem);
-          or7CZML.push(labelItem);
-        }
-      });
-
-      fixStats();
-
-      or7CZML.push(or7Journey);
-      callback(or7CZML);
     });
+
+    // Interpolate time
+    var sumD = 0;
+    var cumD = 0;
+    entryIndex = 0;
+    var itemId = 0;
+
+    or7data.features.forEach(function (or7f) {
+
+      // Add journey entities
+      if (or7f.geometry.type === 'LineString') {
+        var corridorItem = new CorridorItem(itemId++, or7f.properties);
+        var corridorOutlineItem = new CorridorItem(itemId++, or7f.properties, '#8D6E27');
+        corridorItem.position.cartographicDegrees.push(or7f.geometry.coordinates[0][0], or7f.geometry.coordinates[0][1], or7f.geometry.coordinates[0][2]);
+        or7f.geometry.coordinates.forEach(function (or7Coord) {
+          var iDate;
+          if (isSameCoordinates(or7Coord, entries.features[entryIndex].geometry.coordinates)) {
+            iDate = new Date(entries.features[entryIndex].properties.entryDate).toISOString();
+            or7Journey.position.cartographicDegrees.push(iDate);
+            sumD = 0;
+            //prevCoord = or7Coord;
+            entryIndex++;
+          } else {
+            //var distance = calcDistance(prevCoord, or7Coord);
+            sumD += calcDistance(prevCoord, or7Coord);
+            //cumD += distance;
+            var ratio = sumD / distances[entryIndex];
+            iDate = new Date(Date.parse(entries.features[entryIndex - 1].properties.entryDate) + ratio * durations[entryIndex]).toISOString();
+            or7Journey.position.cartographicDegrees.push(iDate);
+          }
+          cumD += calcDistance(prevCoord, or7Coord);
+          updateStats(iDate, cumD, or7Coord[2]);
+          prevCoord = or7Coord;
+          or7Journey.position.cartographicDegrees.push(or7Coord[0]);
+          or7Journey.position.cartographicDegrees.push(or7Coord[1]);
+          or7Journey.position.cartographicDegrees.push(0);
+          corridorItem.corridor.positions.cartographicDegrees.push(or7Coord[0]);
+          corridorItem.corridor.positions.cartographicDegrees.push(or7Coord[1]);
+          corridorItem.corridor.positions.cartographicDegrees.push(0);
+          corridorOutlineItem.corridor.positions.cartographicDegrees.push(or7Coord[0]);
+          corridorOutlineItem.corridor.positions.cartographicDegrees.push(or7Coord[1]);
+          corridorOutlineItem.corridor.positions.cartographicDegrees.push(0);
+        });
+        or7CZML.push(corridorOutlineItem);
+        or7CZML.push(corridorItem);
+      }
+      if (or7f.geometry.type === 'Polygon') {
+        var polygonOutlineItem = new PolygonOutlineItem(itemId++, or7f.properties);
+        var labelItem = new LabelItem(itemId++, or7f.properties);
+        polygonOutlineItem.position.cartographicDegrees.push(or7f.geometry.coordinates[0][0][0], or7f.geometry.coordinates[0][0][1], or7f.geometry.coordinates[0][0][2]);
+        labelItem.position.cartographicDegrees.push(or7f.geometry.coordinates[0][0][0], or7f.geometry.coordinates[0][0][1], or7f.geometry.coordinates[0][0][2]);
+        or7f.geometry.coordinates[0].forEach(function (or7Coord) {
+          polygonOutlineItem.corridor.positions.cartographicDegrees.push(or7Coord[0]);
+          polygonOutlineItem.corridor.positions.cartographicDegrees.push(or7Coord[1]);
+          polygonOutlineItem.corridor.positions.cartographicDegrees.push(0);
+        });
+        or7CZML.push(polygonOutlineItem);
+        or7CZML.push(labelItem);
+      }
+    });
+
+    fixStats();
+
+    or7CZML.push(or7Journey);
+    callback(or7CZML);
   });
 }
 
