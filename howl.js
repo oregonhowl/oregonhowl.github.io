@@ -16280,7 +16280,7 @@ var config = exports.config = {
   },
   stateBoundaryOpts: {
     strokeWidth: 2000,
-    strokeColor: '#1A1A1A',
+    strokeColor: '#474747',
     strokeOpacity: 0.7
   }
 };
