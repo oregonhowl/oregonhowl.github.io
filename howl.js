@@ -16258,7 +16258,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var config = exports.config = {
-  versionString: 'v0.7.0<sup>Beta</sup>',
+  versionString: 'v0.7.1<sup>Beta</sup>',
   resetViewTarget: {
     default: {
       destination: Cesium.Cartesian3.fromDegrees(-120.84, 39.44, 460000),
@@ -31711,6 +31711,7 @@ function wipeoutView() {
       removeCallback();
     }
   });
+  $(_viewer.selectionIndicator.viewModel.selectionIndicatorElement).css('visibility', 'visible');
 
   _viewer.dataSources.remove(or7dataSource, true);
   _viewer.dataSources.remove(or7kmlDataSource, true);
@@ -32449,29 +32450,41 @@ function setupView(viewer) {
             }
           });
         });
+
+        $('.v-legend-item-sel').click(function () {
+          var selected = $(this).text();
+          wthreatsDataSource.entities.values.forEach(function (entity) {
+            if (entity.properties.threatName.getValue() == selected) {
+              _viewer.selectedEntity = entity;
+              selectItem(entity);
+            }
+          });
+        });
       });
     });
   });
 }
 
+function selectItem(e) {
+  if (e && e.properties.threatType) {
+    $('#infoBox').html((0, _wthreatInfoBox2.default)({
+      threatName: e.properties.threatName,
+      threatType: _wthreatsConfig.config.markerStyles[e.properties.threatType.getValue()].legend,
+      threatDescription: e.properties.threatDescription,
+      threatUrlReferences: e.properties.threatUrlReferences.getValue()
+    }));
+    showInfoBox();
+    _viewer.flyTo(e, { offset: new Cesium.HeadingPitchRange(0, -(Math.PI / 4), 50000) });
+  } else {
+    _viewer.selectedEntity = undefined;
+    hideInfoBox();
+  }
+}
+
 function setUpInfoBox() {
 
   // Add selected entity listener to open/close info box
-  viewerCallbacks.push(_viewer.selectedEntityChanged.addEventListener(function (e) {
-    if (e && e.properties.threatType) {
-      $('#infoBox').html((0, _wthreatInfoBox2.default)({
-        threatName: e.properties.threatName,
-        threatType: _wthreatsConfig.config.markerStyles[e.properties.threatType.getValue()].legend,
-        threatDescription: e.properties.threatDescription,
-        threatUrlReferences: e.properties.threatUrlReferences.getValue()
-      }));
-      showInfoBox();
-      _viewer.flyTo(e, { offset: new Cesium.HeadingPitchRange(0, -(Math.PI / 4), 50000) });
-    } else {
-      _viewer.selectedEntity = undefined;
-      hideInfoBox();
-    }
-  }));
+  viewerCallbacks.push(_viewer.selectedEntityChanged.addEventListener(selectItem));
 }
 
 function showInfoBox() {
@@ -52323,7 +52336,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 },"3":function(container,depth0,helpers,partials,data) {
     var stack1;
 
-  return "        <li>"
+  return "        <li class=\"v-legend-item-sel\">"
     + container.escapeExpression(container.lambda(((stack1 = (depth0 != null ? depth0.properties : depth0)) != null ? stack1.threatName : stack1), depth0))
     + "</li>\n";
 },"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
