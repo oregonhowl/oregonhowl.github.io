@@ -17993,8 +17993,8 @@ var homeConfig = exports.homeConfig = {
     imageCredit: 'Photo by the Oregon Department of Fish and Wildlife'
   }, {
     name: 'wthreats',
-    title: 'A Sample of Wilderness Threats',
-    summary: 'In Oregon, in addition of having a disproportionately small amount of protected wilderness areas, they are under constant threat of damage and destruction. In addition to systemic environmental threats, there are many localized hazards such as logging, road development, and industrialization plans that are threatening Oregon\'s pristine wild lands. This \'spotlight\' maps a small sample of recent localized threats facing Oregon\'s wilderness.',
+    title: 'A Sample of Threats to Oregon\'s Wildlands, Wildlife and Waters',
+    summary: 'In Oregon, in addition of having a disproportionately small amount of protected wilderness areas, they are under constant threat of damage and destruction. In addition to systemic environmental threats, there are many localized hazards such as logging, road development, and industrialization plans that are threatening Oregon\'s pristine wildlands. This \'spotlight\' maps a small sample of recent localized threats facing Oregon\'s wildlands, wildlife and waters.',
     image: __webpack_require__(509),
     imageCredit: 'Photo ©2013 Walter Siegmund, <a href="https://commons.wikimedia.org/wiki/File:Lewis_and_Clark_River_2148s.JPG" target="_blank">source</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0/deed.en" target="_blank">license</a>'
   }]
@@ -52301,7 +52301,7 @@ function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj);
 module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var helper;
 
-  return "<div style=\"text-align: center; color: #666; font-size: 18px;\">\n  <b>A Sample of Wilderness Threats</b><br>("
+  return "<div style=\"text-align: center; color: #666; font-size: 18px;\">\n  <b>A Sample of Threats to Oregon's Wildlands, Wildlife and Waters</b><br>("
     + container.escapeExpression(((helper = (helper = helpers.tcount || (depth0 != null ? depth0.tcount : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : {},{"name":"tcount","hash":{},"data":data}) : helper)))
     + " threats)\n</div>\n<canvas id='summaryChart' height=\"180\"></canvas>\n<div style=\"font-size: 80%\">Data source: <a href=\"http://oregonwild.org/\" target=\"_blank\">Oregon Wild</a>, August 2017</div>\n";
 },"useData":true});
@@ -52329,7 +52329,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 },"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1, alias1=depth0 != null ? depth0 : {};
 
-  return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><b>A Sample of Wilderness Threats</b></div>\n  <div><small>(Click on a marker to view threat info)</small></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Threat Types</div>\n    <div class=\"legend-entry\"><span><input id=\"hide-circles-option\" type=\"checkbox\"></span> Hide circles</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n"
+  return "<div id=\"infoPanelContent\">\n  <div id=\"infoPanelTitle\"><b>A Sample of Threats to Oregon's<br>Wildlands, Wildlife and Waters</b></div>\n  <div><small>(Click on a marker to view threat info)</small></div>\n  <div class=\"hline\"></div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">A note on this Spotlight</div>\n    <div class=\"legend-entry\" style=\"margin: 4px;\">\n    The threats presented in this 'Spotlight' represent a sample of some of the threats facing Oregon's wildlands, wildlife and waters, and therefore it is NOT a comprehensive list.<br>This list will be updated periodically - Stay tuned.\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Threat Types</div>\n    <div class=\"legend-entry\"><span><input id=\"hide-circles-option\" type=\"checkbox\"></span> Hide circles</div>\n    <div class=\"legend-entry\" style=\"text-align: left; margin-left: 4px;\">\n      <div class=\"v-legend-scale\">\n        <ul class=\"v-legend-items\">\n"
     + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.markerStyles : depth0),{"name":"each","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "        </ul>\n      </div>\n    </div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">"
     + container.escapeExpression(container.lambda(((stack1 = (depth0 != null ? depth0.threats : depth0)) != null ? stack1.length : stack1), depth0))
