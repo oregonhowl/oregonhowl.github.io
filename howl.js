@@ -11949,6 +11949,7 @@ exports.speedUpAnimation = speedUpAnimation;
 exports.slowDownAnimation = slowDownAnimation;
 exports.setPlaybackPauseMode = setPlaybackPauseMode;
 exports.setUpResetView = setUpResetView;
+exports.b64DecodeUnicode = b64DecodeUnicode;
 
 var _config = __webpack_require__(59);
 
@@ -12116,6 +12117,13 @@ function setUpResetView(viewer, target) {
     $('#track-entity-option').prop('checked', false);
     return false;
   });
+}
+
+// Code from MDN to decode unicode strings
+function b64DecodeUnicode(str) {
+  return decodeURIComponent(Array.prototype.map.call(atob(str), function (c) {
+    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(''));
 }
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
 
@@ -21501,7 +21509,8 @@ function setupView(viewer) {
   statsAll = {};
 
   data.getJSONData(_wthreatsConfig.config.dataPaths.wthreatsList, function (gContents) {
-    wthreatsData = JSON.parse(atob(gContents.content));
+    console.log(utils.b64DecodeUnicode(gContents.content));
+    wthreatsData = JSON.parse(utils.b64DecodeUnicode(gContents.content));
     refreshView();
   });
 }
