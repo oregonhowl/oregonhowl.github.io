@@ -12716,7 +12716,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var config = exports.config = {
-  versionString: 'v0.8.0<sup>Beta</sup>',
+  versionString: 'v0.8.1<sup>Beta</sup>',
   resetViewTarget: {
     default: {
       destination: Cesium.Cartesian3.fromDegrees(-120.84, 39.44, 460000),
@@ -21046,7 +21046,7 @@ function makeCZMLAndStatsForListOfFires(f) {
       return x > arr[iMax] ? i : iMax;
     }, 0);
 
-    var cylinderLength = 1000 + feature.properties.severityHighAcres;
+    var cylinderLength = 500 + feature.properties.severityHighAcres;
     var czmlItem = {
       id: feature.properties.id,
       name: 'Fire Name: ' + feature.properties.name,
@@ -21156,6 +21156,29 @@ function setUpCumulativeOption() {
     updateTimePeriodLabel($('#showingYear').text());
   });
   $('#cumulative-option').change();
+}
+
+function setUpCylinderOptions() {
+  var metric = 'severityHighAcres';
+  var unit = 'acres';
+  $('.cyl-metric').change(function () {
+    metric = $(this).val();
+    updateCylinderLengths(metric, unit);
+  });
+  $('.cyl-unit').change(function () {
+    unit = $(this).val();
+    updateCylinderLengths(metric, unit);
+  });
+}
+
+function updateCylinderLengths(metric, unit) {
+  fireListData.features.forEach(function (f) {
+    var entity = fireListDataSource.entities.getById(f.properties.id);
+    var all = f.properties.severityHighAcres + f.properties.severityModerateAcres + f.properties.severityLowAcres;
+    var length = (unit === 'acres' ? f.properties[metric] : Math.round(f.properties[metric] / all * 10) / 10 * 60000) + 500;
+    entity.cylinder.length = length;
+    entity.position = new Cesium.ConstantPositionProperty(Cesium.Cartesian3.fromDegrees(f.geometry.coordinates[0], f.geometry.coordinates[1], f.geometry.coordinates[2] + length / 2));
+  });
 }
 
 function firesShownCount(time) {
@@ -21309,6 +21332,7 @@ function gotoAll() {
   $('#infoPanel').html((0, _fireListInfoPanel2.default)(statsAll));
   setUpNonForestOption();
   setUpCumulativeOption();
+  setUpCylinderOptions();
   setUpInfoBox();
   utils.setupPlaybackControlActions(animationViewModel, clockViewModel);
   fireListDataSource.show = true;
@@ -45001,7 +45025,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"compiler":[7,"
     + alias2(alias1((depth0 != null ? depth0.toYear : depth0), depth0))
     + "</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Display Options</div>\n    <div class=\"legend-entry\"><span><input id=\"non-forest-option\" type=\"checkbox\"></span> Show non-forest (e.g., shrubland) fires</div>\n    <div class=\"legend-entry\"><span><input id=\"cumulative-option\" type=\"checkbox\"></span> Show cumulative fire events</div>\n  </div>\n"
     + ((stack1 = container.invokePartial(__webpack_require__(147),depth0,{"name":"../../../templates/playbackControl","data":data,"indent":"  ","helpers":helpers,"partials":partials,"decorators":container.decorators})) != null ? stack1 : "")
-    + "  <div class=\"legend-box\">\n    <div class=\"legend-title\">Predominant Burn Severity</div>\n    <div class=\"legend-scale\">\n      <ul class=\"legend-items\">\n        <li><span style='background:#FF0000;'></span>High</li>\n        <li><span style='background:#FFFF00;'></span>Moderate</li>\n        <li><span style='background:#79FFD3;'></span>Low</li>\n      </ul>\n    </div>\n    <div class=\"legend-explanation\">Color corresponds with largest burn severity assessment area</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Area of Fire Boundary</div>\n    <div class=\"legend-scale\">\n      <ul>\n        <li><span class='lbox' style='width: 10px; height: 10px; border-radius: 5px'></span><br>Small</li>\n        <li><span class='lbox' style='width: 20px; height: 20px; border-radius: 10px'></span><br>Med</li>\n        <li><span class='lbox' style='width: 30px; height: 30px; border-radius: 15px'></span><br>Large</li>\n      </ul>\n    </div>\n    <div class=\"legend-explanation\">Cylinder base area is proportional to fire boundary acreage</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">High Severity Area</div>\n    <div class=\"legend-scale\">\n      <ul>\n        <li><span class='scyl' style='width: 30px; height: 20px;'></span><br>Small</li>\n        <li><span class='mcyl' style='width: 30px; height: 30px;'></span><br>Med</li>\n        <li><span class='lcyl' style='width: 30px; height: 50px;'></span><br>Large</li>\n      </ul>\n    </div>\n    <div class=\"legend-explanation\">Cylinder height is proportional to high burn severity acreage</div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Source: <a href=\"http://www.mtbs.gov/\" target=\"_blank\">MTBS</a></div>\n</div>\n";
+    + "  <div class=\"legend-box\">\n    <div class=\"legend-title\">Predominant Burn Severity</div>\n    <div class=\"legend-scale\">\n      <ul class=\"legend-items\">\n        <li><span style='background:#FF0000;'></span>High</li>\n        <li><span style='background:#FFFF00;'></span>Moderate</li>\n        <li><span style='background:#79FFD3;'></span>Low</li>\n      </ul>\n    </div>\n    <div class=\"legend-explanation\">Color corresponds with largest burn severity assessment area</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Area of Fire Boundary</div>\n    <div class=\"legend-scale\">\n      <ul>\n        <li><span class='lbox' style='width: 10px; height: 10px; border-radius: 5px'></span><br>Small</li>\n        <li><span class='lbox' style='width: 20px; height: 20px; border-radius: 10px'></span><br>Med</li>\n        <li><span class='lbox' style='width: 30px; height: 30px; border-radius: 15px'></span><br>Large</li>\n      </ul>\n    </div>\n    <div class=\"legend-explanation\">Cylinder base area is proportional to fire boundary acreage</div>\n  </div>\n  <div class=\"legend-box\">\n    <div class=\"legend-title\">Cylinder height reflects</div>\n    <div class=\"legend-entry\">\n      <b>Severity: &nbsp</b>\n      <input id=\"hig-sev-acres\" class=\"cyl-metric\" name=\"cyl-metric\" value=\"severityHighAcres\" type=\"radio\" checked> High\n      <input id=\"mod-sev-acres\" class=\"cyl-metric\" name=\"cyl-metric\" value=\"severityModerateAcres\" type=\"radio\"> Moderate\n      <input id=\"low-sev-acres\" class=\"cyl-metric\" name=\"cyl-metric\" value=\"severityLowAcres\" type=\"radio\"> Low\n    </div>\n    <div class=\"legend-entry\">\n      <b>Metric: &nbsp</b>\n      <input id=\"low-sev-ratio\" class=\"cyl-unit\" name=\"cyl-unit\" value=\"acres\" type=\"radio\" checked> Acres\n      <input id=\"low-sev-ratio\" class=\"cyl-unit\" name=\"cyl-unit\" value=\"ratio\" type=\"radio\"> % over H+M+L\n    </div>\n    <div class=\"legend-scale\">\n      <ul>\n        <li><span class='scyl' style='width: 30px; height: 20px;'></span><br>Small</li>\n        <li><span class='mcyl' style='width: 30px; height: 30px;'></span><br>Medium</li>\n        <li><span class='lcyl' style='width: 30px; height: 50px;'></span><br>Large</li>\n      </ul>\n    </div>\n  </div>\n  <div id=\"infoPanelCredit\">Data Source: <a href=\"http://www.mtbs.gov/\" target=\"_blank\">MTBS</a></div>\n</div>\n";
 },"usePartial":true,"useData":true});
 
 /***/ }),
