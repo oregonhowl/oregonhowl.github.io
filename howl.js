@@ -12360,7 +12360,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var config = exports.config = {
-  versionString: 'v0.8.2<sup>Beta</sup>',
+  versionString: 'v0.8.3<sup>Beta</sup>',
   resetViewTarget: {
     default: {
       destination: Cesium.Cartesian3.fromDegrees(-120.84, 39.44, 460000),
@@ -21700,6 +21700,7 @@ function updateThreatInfoDialog(selected, coord) {
         }
       };
     }
+
     utils.disableLocationPickMode();
     $('#updateModal').html((0, _wthreatsUpdateModal2.default)({ threatsItem: threatsItem, threatSelect: _wthreatsConfig.config.markerStyles }));
     if (idx === undefined) {
@@ -21747,7 +21748,7 @@ function commitDocument(idx) {
     itemRemoved = true;
   } else {
     commitMessage = 'Update ' + wthreatsData.features[idx].properties.threatName;
-    wthreatsData.features[idx].properties['threatName'] = $('#threat-name').val();
+    wthreatsData.features[idx].properties['threatName'] = dupeFix($('#threat-name').val(), idx);
     wthreatsData.features[idx].properties['threatType'] = $('#threat-type').val();
     wthreatsData.features[idx].properties['threatDescription'] = $('#threat-description').val();
     wthreatsData.features[idx].geometry['coordinates'][0] = $('#threat-lon').val();
@@ -21777,6 +21778,13 @@ function commitDocument(idx) {
   }, function (error) {
     console.log('commit error', error);
   });
+}
+
+function dupeFix(name, i) {
+  var exists = wthreatsData.features.some(function (item, index) {
+    return index != i && name === item.properties['threatName'];
+  });
+  return exists ? name + '-DUP' : name;
 }
 
 function getEntityForItemName(itemName) {
