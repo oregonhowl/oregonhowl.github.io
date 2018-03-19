@@ -12360,7 +12360,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var config = exports.config = {
-  versionString: 'v0.8.5<sup>Beta</sup>',
+  versionString: 'v0.8.6<sup>Beta</sup>',
   resetViewTarget: {
     default: {
       destination: Cesium.Cartesian3.fromDegrees(-120.84, 39.44, 460000),
@@ -19444,7 +19444,8 @@ function setup3dMap(viewName) {
     viewer.trackedEntity = undefined;
   }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
-  viewer.terrainProvider = new Cesium.CesiumTerrainProvider({ url: 'https://assets.agi.com/stk-terrain/world' });
+  // viewer.terrainProvider = new Cesium.CesiumTerrainProvider({url : 'https://assets.agi.com/stk-terrain/world'});
+  viewer.terrainProvider = Cesium.createWorldTerrain();
 
   populateLayerControl();
 
@@ -20281,7 +20282,7 @@ function setupView(viewer) {
           dataSource.entities.values.forEach(function (value) {
             if (value.name === 'OR7v2') {
               or7StoryMapLayer = _viewer.imageryLayers.addImageryProvider(new Cesium.SingleTileImageryProvider({
-                url: value.rectangle.material.image,
+                url: value.rectangle.material.image.getValue().url,
                 rectangle: new Cesium.Rectangle(value.rectangle.coordinates.getValue().west, value.rectangle.coordinates.getValue().south, value.rectangle.coordinates.getValue().east, value.rectangle.coordinates.getValue().north),
                 credit: 'Wolf OR-7 Expedition'
               }));
@@ -21334,7 +21335,7 @@ function gotoFire(fireItems) {
         value.show = false;
 
         severityLayer = _viewer.imageryLayers.addImageryProvider(new Cesium.SingleTileImageryProvider({
-          url: value.rectangle.material.image,
+          url: value.rectangle.material.image.getValue().url,
           rectangle: new Cesium.Rectangle(value.rectangle.coordinates.getValue().west, value.rectangle.coordinates.getValue().south, value.rectangle.coordinates.getValue().east, value.rectangle.coordinates.getValue().north)
         }));
         savedState.severityLayer = severityLayer;
